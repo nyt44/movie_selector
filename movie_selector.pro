@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2017-10-14T18:15:02
+# Project created by QtCreator 2017-10-17T20:41:44
 #
 #-------------------------------------------------
 
@@ -25,10 +25,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        movieselectorwizard.cpp \
+    seriesselectorwizardpage.cpp \
+    mainwizardpage.cpp
 
 HEADERS += \
-        mainwindow.h
-
-FORMS += \
-        mainwindow.ui
+        movieselectorwizard.h \
+    seriesselectorwizardpage.h \
+    mainwizardpage.h
