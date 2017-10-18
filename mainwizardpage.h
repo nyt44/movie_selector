@@ -9,6 +9,7 @@ class MainWizardPage : public QWizardPage
     Q_OBJECT
 public:
     MainWizardPage(QWidget *parent = 0);
+    ~MainWizardPage();
 
 private:
     struct Pimpl;

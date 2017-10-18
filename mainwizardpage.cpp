@@ -1,4 +1,4 @@
-#include "mainwizardpage.h".h"
+#include "mainwizardpage.h"
 
 struct MainWizardPage::Pimpl
 {
@@ -9,4 +9,8 @@ MainWizardPage::MainWizardPage(QWidget *parent)
     : QWizardPage(parent)
 {
     setWindowTitle(tr("Episode selector"));
+}
+
+MainWizardPage::~MainWizardPage()
+{
 }

@@ -12,8 +12,9 @@ class MovieSelectorWizard : public QWizard
     Q_OBJECT
 public:
     MovieSelectorWizard(QWidget *parent = 0);
+    ~MovieSelectorWizard();
     virtual void accept() override;
 private:
-    std::unique_ptr<SeriesSelectorWizardPage> series_selector_page_;
-    std::unique_ptr<MainWizardPage> episode_selector_page_;
+    struct Pimpl;
+    std::unique_ptr<Pimpl> pimpl_;
 };

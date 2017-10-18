@@ -10,3 +10,7 @@ SeriesSelectorWizardPage::SeriesSelectorWizardPage(QWidget *parent)
 {
     setWindowTitle(tr("Series selector"));
 }
+
+SeriesSelectorWizardPage::~SeriesSelectorWizardPage()
+{
+}
