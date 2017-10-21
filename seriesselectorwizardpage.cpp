@@ -31,11 +31,11 @@ struct SeriesSelectorWizardPage::Pimpl
   }
 
   unique_ptr<QVBoxLayout> vbox_;
-  unique_ptr<QVBoxLayout> radio_layout_;
   unique_ptr<QGroupBox> series_group_;
   unique_ptr<QRadioButton> penguins_radio_;
   unique_ptr<QRadioButton> clone_wars_radio_;
   unique_ptr<QRadioButton> rebels_radio_;
+  unique_ptr<QVBoxLayout> radio_layout_;
 };
 
 SeriesSelectorWizardPage::SeriesSelectorWizardPage(QWidget *parent)
