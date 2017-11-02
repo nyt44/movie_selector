@@ -1,5 +1,7 @@
 #include "mainwizardpage.h"
 
+#include "singleton.h"
+
 #include <QBoxLayout>
 #include <QListView>
 #include <QStandardItemModel>
@@ -9,13 +11,18 @@
 #include <QLineEdit>
 
 #include <vector>
+#include <string>
 
 
 using std::unique_ptr;
 using std::make_unique;
 
-struct MainWizardPage::Pimpl
+struct MainWizardPage::Pimpl : public QObject
 {
+
+
+public:
+
     QGroupBox * createForm()
     {
         form_group_box_ = make_unique<QGroupBox>();
@@ -70,9 +77,25 @@ MainWizardPage::MainWizardPage(QWidget *parent)
     pimpl_->vbox_->addWidget(pimpl_->createForm());
     pimpl_->vbox_->addWidget(pimpl_->createEpisodesList());
 
+    Singleton & singleton = Singleton::getOnlyInstance();
+    QObject::connect(&singleton, SIGNAL(updateSignal(std::vector<std::string> *)), this, SLOT(updateEpisodeList(std::vector<std::string> *)));
+
     setLayout(pimpl_->vbox_.get());
 }
 
 MainWizardPage::~MainWizardPage()
 {
+}
+
+void MainWizardPage::updateEpisodeList(std::vector<std::string> * new_list)
+{
+    pimpl_->episodes_list_model_->clear();
+    pimpl_->episodes_list_items_.clear();
+    for (auto i = 0u; i < new_list->size(); ++i)
+    {
+        pimpl_->episodes_list_items_.emplace_back(std::make_unique<QStandardItem>(tr((*new_list)[i].c_str())));
+        pimpl_->episodes_list_model_->appendRow(pimpl_->episodes_list_items_[i].get());
+    }
+
+    pimpl_->episodes_list_->setModel(pimpl_->episodes_list_model_.get());
 }

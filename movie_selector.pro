@@ -28,9 +28,13 @@ SOURCES += \
     msw/source/main.cpp \
     gui/source/mainwizardpage.cpp \
     gui/source/movieselectorwizard.cpp \
-    gui/source/seriesselectorwizardpage.cpp
+    gui/source/seriesselectorwizardpage.cpp \
+    msw/source/singleton.cpp \
+    msw/source/threadmgr.cpp
 
 HEADERS += \
     gui/include/mainwizardpage.h \
     gui/include/movieselectorwizard.h \
-    gui/include/seriesselectorwizardpage.h
+    gui/include/seriesselectorwizardpage.h \
+    msw/include/singleton.h \
+    msw/include/threadmgr.h
