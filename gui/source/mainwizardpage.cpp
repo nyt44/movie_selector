@@ -77,9 +77,6 @@ MainWizardPage::MainWizardPage(QWidget *parent)
     pimpl_->vbox_->addWidget(pimpl_->createForm());
     pimpl_->vbox_->addWidget(pimpl_->createEpisodesList());
 
-    Singleton & singleton = Singleton::getOnlyInstance();
-    QObject::connect(&singleton, SIGNAL(updateSignal(std::vector<std::string> *)), this, SLOT(updateEpisodeList(std::vector<std::string> *)));
-
     setLayout(pimpl_->vbox_.get());
 }
 

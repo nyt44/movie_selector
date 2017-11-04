@@ -5,11 +5,9 @@
 #include <fstream>
 struct Singleton::Pimpl
 {
-    Pimpl() : thread_mgr_(),
-              err_stream_()
+    Pimpl()
     {
     }
-    ThreadMgr thread_mgr_;
     std::ofstream err_stream_;
 };
 
@@ -32,6 +30,7 @@ bool Singleton::logError(const std::string & msg) const
     }
 
     pimpl_->err_stream_ << msg << std::endl;
+    return true;
 }
 Singleton::Singleton()
     : pimpl_(std::make_unique<Pimpl>())

@@ -8,9 +8,11 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 
-const std::string kBasePath = "E:\\dysk\\seriale\\";
+const std::string kBasePath = "F:\\seriale\\";
 
 ThreadMgr::~ThreadMgr()
 {
@@ -18,18 +20,23 @@ ThreadMgr::~ThreadMgr()
 
 struct ThreadMgr::Pimpl
 {
-    Pimpl() : clone_wars_init_thread_(&Pimpl::cloneWarsInitFunc, this),
-              singleton_(Singleton::getOnlyInstance())
+    Pimpl() : singleton_(Singleton::getOnlyInstance()),
+              ready_(false),
+              work_thread_(&Pimpl::worker, this)
+
     {
-//        clone_wars_init_thread_.join();
     }
     ~Pimpl()
     {
+        work_thread_.join();
     }
 
-    std::thread clone_wars_init_thread_;
-    std::vector<std::string> clone_wars_descriptions_;
     Singleton & singleton_;
+    std::vector<std::string> clone_wars_descriptions_;
+    bool ready_;
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    std::thread work_thread_;
 
     void cloneWarsInitFunc()
     {
@@ -55,9 +62,29 @@ struct ThreadMgr::Pimpl
         }
         singleton_.updateSignal(&clone_wars_descriptions_);
     }
+    void worker()
+    {
+        {
+            std::unique_lock<std::mutex> lk(mutex_);
+            cv_.wait(lk, [=]() { return ready_; });
+        }
+
+        std::thread clone_wars_init_thread(&ThreadMgr::Pimpl::cloneWarsInitFunc, this);
+
+        clone_wars_init_thread.join();
+    }
 };
 
 ThreadMgr::ThreadMgr() : pimpl_(std::make_unique<Pimpl>())
 {
+}
 
+void ThreadMgr::start()
+{
+    {
+        std::lock_guard<std::mutex> _(pimpl_->mutex_);
+        pimpl_->ready_ = true;
+    }
+
+    pimpl_->cv_.notify_one();
 }

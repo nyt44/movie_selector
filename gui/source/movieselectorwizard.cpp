@@ -2,6 +2,7 @@
 
 #include "mainwizardpage.h"
 #include "seriesselectorwizardpage.h"
+#include "singleton.h"
 
 struct MovieSelectorWizard::Pimpl
 {
@@ -24,6 +25,10 @@ MovieSelectorWizard::MovieSelectorWizard(QWidget *parent)
     addPage(pimpl_->episode_selector_page_.get());
 
     setWindowTitle(tr("Movie Selector"));
+
+    Singleton & singleton = Singleton::getOnlyInstance();
+    QObject::connect(&singleton, SIGNAL(updateSignal(std::vector<std::string> *)), pimpl_->episode_selector_page_.get(), SLOT(updateEpisodeList(std::vector<std::string> *)));
+
 }
 
 MovieSelectorWizard::~MovieSelectorWizard()

@@ -8,6 +8,8 @@ public:
     ThreadMgr();
     ~ThreadMgr();
 
+    void start();
+
 private:
     ThreadMgr(const ThreadMgr &) = delete;
     ThreadMgr & operator=(const ThreadMgr &) = delete;
@@ -16,3 +18,5 @@ private:
     struct Pimpl;
     std::unique_ptr<Pimpl> pimpl_;
 };
+
+extern ThreadMgr thread_mgr;
