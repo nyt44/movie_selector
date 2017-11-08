@@ -4,7 +4,7 @@
 
 #include <QBoxLayout>
 #include <QListView>
-#include <QStandardItemModel>
+#include <QStringListModel>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QLabel>
@@ -39,22 +39,15 @@ public:
 
     QListView * createEpisodesList()
     {
+
         episodes_list_ = make_unique<QListView>();
-
-        //Example list;
-        episodes_list_items_.emplace_back(make_unique<QStandardItem>(tr("Episode1")));
-        episodes_list_items_.emplace_back(make_unique<QStandardItem>(tr("Episode2")));
-
-        episodes_list_model_= make_unique<QStandardItemModel>(
-                    static_cast<int>(episodes_list_items_.size()), 1);
-
-        for (auto i = 0u; i < episodes_list_items_.size(); ++i)
-        {
-            episodes_list_model_->setItem(i, 0, episodes_list_items_[i].get());
-        }
+        episodes_list_items_ = make_unique<QStringList>();
+        episodes_list_model_ = make_unique<QStringListModel>(*episodes_list_items_, nullptr);
         episodes_list_->setModel(episodes_list_model_.get());
 
         return episodes_list_.get();
+
+
     }
 
     unique_ptr<QVBoxLayout> vbox_;
@@ -63,8 +56,8 @@ public:
     unique_ptr<QLineEdit> search_edit_;
     unique_ptr<QFormLayout> form_layout_;
     unique_ptr<QListView> episodes_list_;
-    unique_ptr<QStandardItemModel > episodes_list_model_;
-    std::vector<unique_ptr<QStandardItem>> episodes_list_items_;
+    unique_ptr<QStringListModel> episodes_list_model_;
+    unique_ptr<QStringList> episodes_list_items_;
 };
 
 MainWizardPage::MainWizardPage(QWidget *parent)
@@ -86,13 +79,11 @@ MainWizardPage::~MainWizardPage()
 
 void MainWizardPage::updateEpisodeList(std::vector<std::string> * new_list)
 {
-    pimpl_->episodes_list_model_->clear();
-    pimpl_->episodes_list_items_.clear();
+    pimpl_->episodes_list_model_->removeRows(0, pimpl_->episodes_list_model_->rowCount());
+    pimpl_->episodes_list_items_->clear();
     for (auto i = 0u; i < new_list->size(); ++i)
     {
-        pimpl_->episodes_list_items_.emplace_back(std::make_unique<QStandardItem>(tr((*new_list)[i].c_str())));
-        pimpl_->episodes_list_model_->appendRow(pimpl_->episodes_list_items_[i].get());
+                 pimpl_->episodes_list_items_->append(tr((*new_list)[i].c_str()));
     }
-
-    pimpl_->episodes_list_->setModel(pimpl_->episodes_list_model_.get());
+    pimpl_->episodes_list_model_->setStringList(*(pimpl_->episodes_list_items_));
 }

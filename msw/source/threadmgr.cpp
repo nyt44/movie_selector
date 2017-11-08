@@ -12,7 +12,7 @@
 #include <condition_variable>
 
 
-const std::string kBasePath = "F:\\seriale\\";
+const std::string kBasePath = "E:\\dysk\\seriale\\";
 
 ThreadMgr::~ThreadMgr()
 {
@@ -51,14 +51,14 @@ struct ThreadMgr::Pimpl
         }
 
         std::string temp_str;
-
+        std::getline(fin, temp_str);
         while (fin)
         {
-            std::getline(fin, temp_str);
             if (!temp_str.empty())
             {
                 clone_wars_descriptions_.emplace_back(temp_str);
             }
+            std::getline(fin, temp_str);
         }
         singleton_.updateSignal(&clone_wars_descriptions_);
     }
