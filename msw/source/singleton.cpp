@@ -1,16 +1,22 @@
 #include "singleton.h"
 
-#include "threadmgr.h"
-
 #include <fstream>
+
 struct Singleton::Pimpl
 {
-    Pimpl()
-    {
-    }
+    Pimpl() {}
+
     std::ofstream err_stream_;
 };
 
+//Public methods
+Singleton::Singleton() : pimpl_(std::make_unique<Pimpl>())
+{
+}
+
+Singleton::~Singleton()
+{
+}
 
 Singleton & Singleton::getOnlyInstance()
 {
@@ -23,6 +29,7 @@ bool Singleton::logError(const std::string & msg) const
     if (!pimpl_->err_stream_.is_open())
     {
         pimpl_->err_stream_.open("err.txt");
+
         if (!pimpl_->err_stream_.is_open())
         {
             return false;
@@ -30,15 +37,8 @@ bool Singleton::logError(const std::string & msg) const
     }
 
     pimpl_->err_stream_ << msg << std::endl;
-    return true;
-}
-Singleton::Singleton()
-    : pimpl_(std::make_unique<Pimpl>())
-{
-}
 
-Singleton::~Singleton()
-{
+    return true;
 }
 
 

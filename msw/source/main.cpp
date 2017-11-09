@@ -11,7 +11,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MovieSelectorWizard wizard;
+
     thread_mgr.start();
+
     wizard.show();
 
     return app.exec();

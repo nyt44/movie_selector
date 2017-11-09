@@ -7,7 +7,6 @@ class ThreadMgr
 public:
     ThreadMgr();
     ~ThreadMgr();
-
     void start();
 
 private:
