@@ -1,5 +1,8 @@
 #include "mainwizardpage.h"
 
+#include "singleton.h"
+#include "seriesdatakeeper.h"
+
 #include <QBoxLayout>
 #include <QListView>
 #include <QStringListModel>
@@ -13,6 +16,7 @@ using std::make_unique;
 
 struct MainWizardPage::Pimpl
 {
+    Pimpl();
     QGroupBox * createForm();
     QListView * createEpisodesList();
 
@@ -24,6 +28,8 @@ struct MainWizardPage::Pimpl
     unique_ptr<QListView> episodes_list_;
     unique_ptr<QStringListModel> episodes_list_model_;
     unique_ptr<QStringList> episodes_list_items_;
+
+    SeriesDataKeeper * series_data_keeper_;
 };
 
 //Public functions
@@ -60,6 +66,12 @@ void MainWizardPage::updateEpisodeList(std::vector<std::string> * new_list)
 
 
 //Private functions
+
+MainWizardPage::Pimpl::Pimpl()
+{
+    Singleton & s = Singleton::getOnlyInstance();
+    series_data_keeper_ = s.getSeriesDataKeeper();
+}
 
 QGroupBox * MainWizardPage::Pimpl::createForm()
 {

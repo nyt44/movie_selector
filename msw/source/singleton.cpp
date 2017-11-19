@@ -7,6 +7,7 @@ struct Singleton::Pimpl
     Pimpl() {}
 
     std::ofstream err_stream_;
+    SeriesDataKeeper series_data_keeper_;
 };
 
 //Public methods
@@ -45,4 +46,9 @@ bool Singleton::logError(const std::string & msg) const
 void Singleton::updateSignal(std::vector<std::string> *cw_matched)
 {
     emit cloneWarsInitialized(cw_matched);
+}
+
+SeriesDataKeeper * Singleton::getSeriesDataKeeper() const
+{
+    return &(pimpl_->series_data_keeper_);
 }

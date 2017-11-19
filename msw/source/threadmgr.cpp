@@ -1,6 +1,7 @@
 #include "threadmgr.h"
 
 #include "singleton.h"
+#include "seriesdatakeeper.h"
 
 #include <QObject>
 
@@ -22,6 +23,7 @@ struct ThreadMgr::Pimpl
     void worker();
 
     Singleton & singleton_;
+    SeriesDataKeeper * series_data_keeper_;
     std::vector<std::string> clone_wars_descriptions_;
     bool ready_;
     std::mutex mutex_;
@@ -55,6 +57,7 @@ ThreadMgr::Pimpl::Pimpl() : singleton_(Singleton::getOnlyInstance()),
                             ready_(false),
                             work_thread_(&Pimpl::worker, this)
 {
+    series_data_keeper_ = singleton_.getSeriesDataKeeper();
 }
 
 ThreadMgr::Pimpl::~Pimpl()
