@@ -43,9 +43,9 @@ bool Singleton::logError(const std::string & msg) const
 }
 
 
-void Singleton::updateSignal(std::vector<std::string> *cw_matched)
+void Singleton::updateSignal()
 {
-    emit cloneWarsInitialized(cw_matched);
+    emit cloneWarsInitialized();
 }
 
 SeriesDataKeeper * Singleton::getSeriesDataKeeper() const

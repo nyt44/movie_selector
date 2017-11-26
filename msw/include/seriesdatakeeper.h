@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <cstdint>
 #include <memory>
 
@@ -13,9 +12,13 @@ class SeriesDataKeeper
     void pushBackEpisode(std::string && path, std::string && desc);
     std::string getDesc(uint16_t id) const;
     std::string getPath(uint16_t id) const;
-    void getIdVector(std::vector<uint16_t> & result) const;
+    bool getId(uint16_t & res) const;
     void pushBackId(uint16_t id);
-    void clearIdVector();
+    void startIdWriting();
+    void stopIdWriting();
+    void startIdReading();
+    void stopIdReading();
+    uint16_t mapSize() const;
 private:
     struct Pimpl;
     std::unique_ptr<Pimpl> pimpl_;

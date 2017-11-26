@@ -14,7 +14,7 @@ class Singleton : public QObject
 public:
     static Singleton & getOnlyInstance();
     bool logError(const std::string & msg) const;
-    void updateSignal(std::vector<std::string> * cw_matched);
+    void updateSignal();
     SeriesDataKeeper * getSeriesDataKeeper() const;
 
 private:
@@ -29,5 +29,5 @@ private:
     std::unique_ptr<Pimpl> pimpl_;
 
 signals:
-    void cloneWarsInitialized(std::vector<std::string> * cw_matched);
+    void cloneWarsInitialized();
 };

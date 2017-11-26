@@ -28,12 +28,12 @@ struct ThreadMgr::Pimpl
     ~Pimpl();
     void cloneWarsInitFunc();
     void worker();
-    void setCwPathsList(const std::vector<std::string> & clone_wars_descs);
+    void setCwPathsMap(std::vector<std::string> & clone_wars_descs);
+    void setCwIds();
 
 
     Singleton & singleton_;
     SeriesDataKeeper * series_data_keeper_;
-    std::vector<std::string> clone_wars_descriptions_;
     bool ready_;
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -88,18 +88,20 @@ void ThreadMgr::Pimpl::cloneWarsInitFunc()
 
     std::string temp_str;
     std::getline(fin, temp_str);
+    std::vector<std::string> clone_wars_descriptions;
     while (fin)
     {
         if (!temp_str.empty())
         {
-            clone_wars_descriptions_.emplace_back(temp_str);
+            clone_wars_descriptions.emplace_back(temp_str);
         }
         std::getline(fin, temp_str);
     }
 
-    setCwPathsList(clone_wars_descriptions_);
+    setCwPathsMap(clone_wars_descriptions);
+    setCwIds();
 
-    singleton_.updateSignal(&clone_wars_descriptions_);
+    singleton_.updateSignal();
 }
 void ThreadMgr::Pimpl::worker()
 {
@@ -113,7 +115,7 @@ void ThreadMgr::Pimpl::worker()
     clone_wars_init_thread.join();
 }
 
-void ThreadMgr::Pimpl::setCwPathsList(const std::vector<std::string> & clone_wars_descs)
+void ThreadMgr::Pimpl::setCwPathsMap(std::vector<std::string> & clone_wars_descs)
 {
     std::deque<std::string>  paths;
     for (auto & path : fs::recursive_directory_iterator(kBasePath + "Clone Wars"))
@@ -157,7 +159,7 @@ void ThreadMgr::Pimpl::setCwPathsList(const std::vector<std::string> & clone_war
             {
                 file_matched = true;
                 std::string found_file = file_match[0].str();
-                //series_data_keeper->pushBackEpisode(std::move(found_file), std::move(shortened));
+                series_data_keeper_->pushBackEpisode(std::move(found_file), std::move(*desc_it));
                 path_it = paths.erase(path_it);
                 break;
             }
@@ -167,4 +169,17 @@ void ThreadMgr::Pimpl::setCwPathsList(const std::vector<std::string> & clone_war
             singleton_.logError("\"" + *desc_it + "\" - corresponding file not found");
         }
     }
+}
+
+void ThreadMgr::Pimpl::setCwIds()
+{
+    series_data_keeper_->startIdWriting();
+
+    uint16_t series_amount = series_data_keeper_->mapSize();
+    for (auto i = 0u; i < series_amount; ++i)
+    {
+        series_data_keeper_->pushBackId(i);
+    }
+
+    series_data_keeper_->stopIdWriting();
 }

@@ -51,14 +51,23 @@ MainWizardPage::~MainWizardPage()
 {
 }
 
-void MainWizardPage::updateEpisodeList(std::vector<std::string> * new_list)
+void MainWizardPage::updateEpisodeList()
 {
     pimpl_->episodes_list_model_->removeRows(0, pimpl_->episodes_list_model_->rowCount());
     pimpl_->episodes_list_items_->clear();
 
-    for (auto i = 0u; i < new_list->size(); ++i)
+    uint16_t id;
+    while (pimpl_->series_data_keeper_->getId(id))
     {
-                 pimpl_->episodes_list_items_->append(tr((*new_list)[i].c_str()));
+        std::string desc = pimpl_->series_data_keeper_->getDesc(id);
+        if (desc == "")
+        {
+            break;
+        }
+        else
+        {
+            pimpl_->episodes_list_items_->append(tr(desc.c_str()));
+        }
     }
 
     pimpl_->episodes_list_model_->setStringList(*(pimpl_->episodes_list_items_));

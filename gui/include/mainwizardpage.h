@@ -12,7 +12,7 @@ public:
     ~MainWizardPage();
 
 public slots:
-    void updateEpisodeList(std::vector<std::string> * new_list);
+    void updateEpisodeList();
 private:
     struct Pimpl;
     std::unique_ptr<Pimpl> pimpl_;

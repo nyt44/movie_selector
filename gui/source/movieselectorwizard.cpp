@@ -25,8 +25,8 @@ MovieSelectorWizard::MovieSelectorWizard(QWidget *parent)
     setWindowTitle(tr("Movie Selector"));
 
     Singleton & singleton = Singleton::getOnlyInstance();
-    QObject::connect(&singleton, SIGNAL(cloneWarsInitialized(std::vector<std::string> *)),
-                     pimpl_->episode_selector_page_.get(), SLOT(updateEpisodeList(std::vector<std::string> *)));
+    QObject::connect(&singleton, SIGNAL(cloneWarsInitialized()),
+                     pimpl_->episode_selector_page_.get(), SLOT(updateEpisodeList()));
 
 }
 

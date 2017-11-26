@@ -3,20 +3,28 @@
 #include <unordered_map>
 #include <mutex>
 #include <atomic>
+#include <array>
+#include <queue>
+#include <utility>
 
 struct SeriesDataKeeper::Pimpl
 {
     Pimpl();
 
+    static uint16_t curr_id_;
     std::unordered_map<uint16_t, std::pair<std::string, std::string>> all_clone_wars_;
     std::mutex all_mutex_;
-    std::vector<uint16_t> selected_clone_wars1_;
-    std::vector<uint16_t> selected_clone_wars2_;
-    std::mutex selected_mutex1_;
-    std::mutex selected_mutex2_;
-    std::atomic<uint8_t> no_vector_to_read_;
-    std::atomic<uint8_t> no_vector_to_write_;
+    std::array<std::queue<uint16_t>, 3> selected_clone_wars_;
+    std::array<std::mutex, 3>  selected_mutex_;
+    uint8_t no_queue_to_read_;
+    uint8_t no_queue_to_write_;
+    uint8_t no_next_read_;
+    std::mutex queue_number_mutex_;
+    std::atomic<bool> currently_reading_;
+    std::atomic<bool> change_read_number_;
 };
+
+uint16_t SeriesDataKeeper::Pimpl::curr_id_ = 0u;
 
 //Public methods
 
@@ -30,46 +38,117 @@ SeriesDataKeeper::~SeriesDataKeeper()
 
 void SeriesDataKeeper::pushBackEpisode(std::string && path, std::string && desc)
 {
-    //TODO
+    std::lock_guard<std::mutex> _(pimpl_->all_mutex_);
+    pimpl_->all_clone_wars_[pimpl_->curr_id_++] = std::pair<std::string, std::string>(std::move(path), std::move(desc));
 }
 
 std::string SeriesDataKeeper::getDesc(uint16_t id) const
 {
-    std::string result;
+    std::lock_guard<std::mutex> _(pimpl_->all_mutex_);
 
-    //TODO
+    auto found =  pimpl_->all_clone_wars_.find(id);
 
-    return result;
+    if (found != pimpl_->all_clone_wars_.end())
+    {
+        return found->second.second;
+    }
+    else
+    {
+        return "";
+    }
 }
 
 std::string SeriesDataKeeper::getPath(uint16_t id) const
 {
-    std::string result;
+    std::lock_guard<std::mutex> _(pimpl_->all_mutex_);
 
-    //TODO
+    auto found =  pimpl_->all_clone_wars_.find(id);
 
-    return result;
+    if (found != pimpl_->all_clone_wars_.end())
+    {
+        return found->second.first;
+    }
+    else
+    {
+        return "";
+    }
 }
 
-void SeriesDataKeeper::getIdVector(std::vector<uint16_t> & result) const
+bool SeriesDataKeeper::getId(uint16_t & res) const
 {
-    //TODO
+    std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
+    std::lock_guard<std::mutex> _(pimpl_->selected_mutex_[pimpl_->no_queue_to_read_]);
+
+    if (pimpl_->selected_clone_wars_[pimpl_->no_queue_to_read_].empty())
+    {
+        return false;
+    }
+
+    res = pimpl_->selected_clone_wars_[pimpl_->no_queue_to_read_].front();
+    pimpl_->selected_clone_wars_[pimpl_->no_queue_to_read_].pop();
+
+    return true;
 }
 
 void SeriesDataKeeper::pushBackId(uint16_t id)
 {
-    //TODO
+    std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
+    std::lock_guard<std::mutex> _(pimpl_->selected_mutex_[pimpl_->no_queue_to_write_]);
+
+    pimpl_->selected_clone_wars_[pimpl_->no_queue_to_write_].push(id);
 }
 
-void SeriesDataKeeper::clearIdVector()
+void SeriesDataKeeper::startIdWriting()
 {
-    //TODO
+    std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
+    std::lock_guard<std::mutex> _(pimpl_->selected_mutex_[pimpl_->no_queue_to_write_]);
+
+    while (!pimpl_->selected_clone_wars_[pimpl_->no_queue_to_write_].empty())
+    {
+        pimpl_->selected_clone_wars_[pimpl_->no_queue_to_write_].pop();
+    }
+}
+
+void SeriesDataKeeper::stopIdWriting()
+{
+    std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
+    if (pimpl_->currently_reading_)
+    {
+        pimpl_->change_read_number_ = true;
+        std::swap(pimpl_->no_next_read_, pimpl_->no_queue_to_write_);
+    }
+    else
+    {
+        std::swap(pimpl_->no_queue_to_read_, pimpl_->no_queue_to_write_);
+    }
+}
+void SeriesDataKeeper::startIdReading()
+{
+    pimpl_->currently_reading_ = true;
+}
+
+void SeriesDataKeeper::stopIdReading()
+{
+    std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
+
+    if (pimpl_->change_read_number_)
+    {
+        std::swap(pimpl_->no_queue_to_read_, pimpl_->no_next_read_);
+        pimpl_->change_read_number_ = false;
+    }
+
+    pimpl_->currently_reading_ = false;
+}
+uint16_t SeriesDataKeeper::mapSize() const
+{
+    return pimpl_->curr_id_;
 }
 
 //Private functions
 
 SeriesDataKeeper::Pimpl::Pimpl()
-    : no_vector_to_read_(0), no_vector_to_write_(1)
+    : no_queue_to_read_(0), no_queue_to_write_(1), no_next_read_(2),
+      currently_reading_(false), change_read_number_(false)
 {
 
 }
