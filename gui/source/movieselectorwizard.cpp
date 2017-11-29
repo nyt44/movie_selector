@@ -36,7 +36,11 @@ MovieSelectorWizard::~MovieSelectorWizard()
 
 void MovieSelectorWizard::accept()
 {
-    //TODO
+    std:: string sel_desc =pimpl_->episode_selector_page_->getSelectedEpisode();
+    std::string sel_path = pimpl_->episode_selector_page_->descToPath(sel_desc);
+    sel_path = "\"" + sel_path +"\"";
+    //TODO: replace system() with ShellExecute of sth like that
+    system(sel_path.c_str());
 }
 
 //Private functions

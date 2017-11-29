@@ -74,6 +74,20 @@ std::string SeriesDataKeeper::getPath(uint16_t id) const
     }
 }
 
+std::string SeriesDataKeeper::getPath(const std::string & desc)
+{
+    auto it = std::find_if(pimpl_->all_clone_wars_.begin(), pimpl_->all_clone_wars_.end(),
+                           [desc](const auto & elem) { return desc == elem.second.second; });
+    if (it == pimpl_->all_clone_wars_.end())
+    {
+        return "";
+    }
+    else
+    {
+        return it->second.first;
+    }
+}
+
 bool SeriesDataKeeper::getId(uint16_t & res) const
 {
     std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);

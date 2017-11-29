@@ -73,6 +73,19 @@ void MainWizardPage::updateEpisodeList()
     pimpl_->episodes_list_model_->setStringList(*(pimpl_->episodes_list_items_));
 }
 
+std::string MainWizardPage::getSelectedEpisode() const
+{
+    QModelIndex index = pimpl_->episodes_list_->currentIndex();
+    QString item_text = index.data(Qt::DisplayRole).toString();
+
+    return item_text.toStdString();
+}
+
+std::string MainWizardPage::descToPath(const std::string & desc) const
+{
+    return pimpl_->series_data_keeper_->getPath(desc);
+}
+
 
 //Private functions
 

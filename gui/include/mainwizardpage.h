@@ -3,6 +3,7 @@
 #include <QWizardPage>
 
 #include <memory>
+#include <string>
 
 class MainWizardPage : public QWizardPage
 {
@@ -10,6 +11,8 @@ class MainWizardPage : public QWizardPage
 public:
     MainWizardPage(QWidget *parent = 0);
     ~MainWizardPage();
+    std::string getSelectedEpisode() const;
+    std::string descToPath(const std::string & desc) const;
 
 public slots:
     void updateEpisodeList();
