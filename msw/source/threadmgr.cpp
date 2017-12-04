@@ -16,6 +16,9 @@
 #include <regex>
 #include <sstream>
 #include <iomanip>
+#include <queue>
+#include <atomic>
+#include <chrono>
 
 namespace fs = std::experimental::filesystem;
 
@@ -30,6 +33,7 @@ struct ThreadMgr::Pimpl
     void worker();
     void setCwPathsMap(std::vector<std::string> & clone_wars_descs);
     void setCwIds();
+    void process(const std::string & task);
 
 
     Singleton & singleton_;
@@ -38,6 +42,8 @@ struct ThreadMgr::Pimpl
     std::mutex mutex_;
     std::condition_variable cv_;
     std::thread work_thread_;
+    std::queue<std::string> task_queue_;
+    std::atomic<bool> stopped_;
 
 };
 
@@ -50,6 +56,7 @@ ThreadMgr::ThreadMgr() : pimpl_(std::make_unique<Pimpl>())
 ThreadMgr::~ThreadMgr()
 {
 }
+
 void ThreadMgr::start()
 {
     {
@@ -60,10 +67,24 @@ void ThreadMgr::start()
     pimpl_->cv_.notify_one();
 }
 
+void ThreadMgr::stop()
+{
+    pimpl_->stopped_ = true;
+}
+
+//Slots
+
+void ThreadMgr::newTextGivenSlot(const QString & new_text)
+{
+    std::string request = new_text.toStdString();
+    std::lock_guard<std::mutex> _(pimpl_->mutex_);
+    pimpl_->task_queue_.push(request);
+}
+
 //Private functions
 
 ThreadMgr::Pimpl::Pimpl() : singleton_(Singleton::getOnlyInstance()),
-                            ready_(false),
+                            ready_(false), stopped_(false),
                             work_thread_(&Pimpl::worker, this)
 {
     series_data_keeper_ = singleton_.getSeriesDataKeeper();
@@ -113,6 +134,37 @@ void ThreadMgr::Pimpl::worker()
     std::thread clone_wars_init_thread(&ThreadMgr::Pimpl::cloneWarsInitFunc, this);
 
     clone_wars_init_thread.join();
+
+    size_t queue_size;
+    std::string curr_task;
+    while (!stopped_)
+    {
+        {
+            std::lock_guard<std::mutex> _(mutex_);
+            queue_size = task_queue_.size();
+        }
+
+        if (queue_size > 1)
+        {
+            std::lock_guard<std::mutex> _(mutex_);
+            task_queue_.pop();
+            continue;
+        }
+        else if (queue_size == 1)
+        {
+            {
+                std::lock_guard<std::mutex> _(mutex_);
+                curr_task = task_queue_.front();
+                task_queue_.pop();
+            }
+            process(curr_task);
+            continue;
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
 }
 
 void ThreadMgr::Pimpl::setCwPathsMap(std::vector<std::string> & clone_wars_descs)
@@ -182,4 +234,21 @@ void ThreadMgr::Pimpl::setCwIds()
     }
 
     series_data_keeper_->stopIdWriting();
+}
+void ThreadMgr::Pimpl::process(const std::string & task)
+{
+    std::regex search_pattern{".*" + task + ".*", std::regex_constants::icase};
+    series_data_keeper_->startIdWriting();
+
+    uint16_t series_amount = series_data_keeper_->mapSize();
+    for (auto i = 0u; i < series_amount; ++i)
+    {
+        if (std::regex_match(series_data_keeper_->getDesc(i), search_pattern))
+        {
+            series_data_keeper_->pushBackId(i);
+        }
+    }
+    series_data_keeper_->stopIdWriting();
+
+    singleton_.updateSignal();
 }

@@ -3,6 +3,7 @@
 #include "mainwizardpage.h"
 #include "seriesselectorwizardpage.h"
 #include "singleton.h"
+#include "threadmgr.h"
 
 struct MovieSelectorWizard::Pimpl
 {
@@ -41,6 +42,11 @@ void MovieSelectorWizard::accept()
     sel_path = "\"" + sel_path +"\"";
     //TODO: replace system() with ShellExecute or sth like that
     system(sel_path.c_str());
+}
+void MovieSelectorWizard::reject()
+{
+    thread_mgr.stop();
+    QWizard::reject();
 }
 
 //Private functions

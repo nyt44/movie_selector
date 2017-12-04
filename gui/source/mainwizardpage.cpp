@@ -2,6 +2,7 @@
 
 #include "singleton.h"
 #include "seriesdatakeeper.h"
+#include "threadmgr.h"
 
 #include <QBoxLayout>
 #include <QListView>
@@ -45,6 +46,9 @@ MainWizardPage::MainWizardPage(QWidget *parent)
     pimpl_->vbox_->addWidget(pimpl_->createEpisodesList());
 
     setLayout(pimpl_->vbox_.get());
+
+    QObject::connect(pimpl_->search_edit_.get(), SIGNAL(textChanged(const QString &)),
+                     &thread_mgr, SLOT(newTextGivenSlot(const QString & )));
 }
 
 MainWizardPage::~MainWizardPage()
@@ -57,6 +61,8 @@ void MainWizardPage::updateEpisodeList()
     pimpl_->episodes_list_items_->clear();
 
     uint16_t id;
+
+    pimpl_->series_data_keeper_->startIdReading();
     while (pimpl_->series_data_keeper_->getId(id))
     {
         std::string desc = pimpl_->series_data_keeper_->getDesc(id);
@@ -69,6 +75,7 @@ void MainWizardPage::updateEpisodeList()
             pimpl_->episodes_list_items_->append(tr(desc.c_str()));
         }
     }
+    pimpl_->series_data_keeper_->stopIdReading();
 
     pimpl_->episodes_list_model_->setStringList(*(pimpl_->episodes_list_items_));
 }
