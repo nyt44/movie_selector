@@ -96,10 +96,8 @@ std::string MainWizardPage::descToPath(const std::string & desc) const
 
 //Private functions
 
-MainWizardPage::Pimpl::Pimpl()
+MainWizardPage::Pimpl::Pimpl() : series_data_keeper_(thread_mgr.getSeriesDataKeeper())
 {
-    Singleton & s = Singleton::getOnlyInstance();
-    series_data_keeper_ = s.getSeriesDataKeeper();
 }
 
 QGroupBox * MainWizardPage::Pimpl::createForm()

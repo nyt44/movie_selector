@@ -1,7 +1,6 @@
 #include "threadmgr.h"
 
 #include "singleton.h"
-#include "seriesdatakeeper.h"
 
 #include <QObject>
 
@@ -37,7 +36,7 @@ struct ThreadMgr::Pimpl
 
 
     Singleton & singleton_;
-    SeriesDataKeeper * series_data_keeper_;
+    std::unique_ptr<CwDataKeeper> cw_data_keeper_;
     bool ready_;
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -72,6 +71,11 @@ void ThreadMgr::stop()
     pimpl_->stopped_ = true;
 }
 
+SeriesDataKeeper * ThreadMgr::getSeriesDataKeeper() const
+{
+    return pimpl_->cw_data_keeper_.get();
+}
+
 //Slots
 
 void ThreadMgr::newTextGivenSlot(const QString & new_text)
@@ -85,9 +89,9 @@ void ThreadMgr::newTextGivenSlot(const QString & new_text)
 
 ThreadMgr::Pimpl::Pimpl() : singleton_(Singleton::getOnlyInstance()),
                             ready_(false), stopped_(false),
-                            work_thread_(&Pimpl::worker, this)
+                            work_thread_(&Pimpl::worker, this),
+                            cw_data_keeper_(std::make_unique<CwDataKeeper>())
 {
-    series_data_keeper_ = singleton_.getSeriesDataKeeper();
 }
 
 ThreadMgr::Pimpl::~Pimpl()
@@ -211,7 +215,7 @@ void ThreadMgr::Pimpl::setCwPathsMap(std::vector<std::string> & clone_wars_descs
             {
                 file_matched = true;
                 std::string found_file = file_match[0].str();
-                series_data_keeper_->pushBackEpisode(std::move(found_file), std::move(*desc_it));
+                cw_data_keeper_->pushBackEpisode(std::move(found_file), std::move(*desc_it));
                 path_it = paths.erase(path_it);
                 break;
             }
@@ -225,30 +229,30 @@ void ThreadMgr::Pimpl::setCwPathsMap(std::vector<std::string> & clone_wars_descs
 
 void ThreadMgr::Pimpl::setCwIds()
 {
-    series_data_keeper_->startIdWriting();
+    cw_data_keeper_->startIdWriting();
 
-    uint16_t series_amount = series_data_keeper_->mapSize();
+    uint16_t series_amount = cw_data_keeper_->mapSize();
     for (auto i = 0u; i < series_amount; ++i)
     {
-        series_data_keeper_->pushBackId(i);
+        cw_data_keeper_->pushBackId(i);
     }
 
-    series_data_keeper_->stopIdWriting();
+    cw_data_keeper_->stopIdWriting();
 }
 void ThreadMgr::Pimpl::process(const std::string & task)
 {
     std::regex search_pattern{".*" + task + ".*", std::regex_constants::icase};
-    series_data_keeper_->startIdWriting();
+    cw_data_keeper_->startIdWriting();
 
-    uint16_t series_amount = series_data_keeper_->mapSize();
+    uint16_t series_amount = cw_data_keeper_->mapSize();
     for (auto i = 0u; i < series_amount; ++i)
     {
-        if (std::regex_match(series_data_keeper_->getDesc(i), search_pattern))
+        if (std::regex_match(cw_data_keeper_->getDesc(i), search_pattern))
         {
-            series_data_keeper_->pushBackId(i);
+            cw_data_keeper_->pushBackId(i);
         }
     }
-    series_data_keeper_->stopIdWriting();
+    cw_data_keeper_->stopIdWriting();
 
     singleton_.updateSignal();
 }

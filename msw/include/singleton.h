@@ -1,7 +1,5 @@
 # pragma once
 
-#include "seriesdatakeeper.h"
-
 #include <QObject>
 
 #include <memory>
@@ -14,7 +12,6 @@ public:
     static Singleton & getOnlyInstance();
     bool logError(const std::string & msg) const;
     void updateSignal();
-    SeriesDataKeeper * getSeriesDataKeeper() const;
 
 private:
     Singleton();

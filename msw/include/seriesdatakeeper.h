@@ -20,7 +20,14 @@ class SeriesDataKeeper
     void startIdReading();
     void stopIdReading();
     uint16_t mapSize() const;
+    virtual std::string subDirName() const = 0;
 private:
     struct Pimpl;
     std::unique_ptr<Pimpl> pimpl_;
+};
+
+class CwDataKeeper : public SeriesDataKeeper
+{
+public:
+    virtual std::string subDirName() const override;
 };

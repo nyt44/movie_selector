@@ -166,3 +166,10 @@ SeriesDataKeeper::Pimpl::Pimpl()
 {
 
 }
+
+//CwDataKeeper overriden method
+
+std::string CwDataKeeper::subDirName() const
+{
+    return "Clone Wars";
+}

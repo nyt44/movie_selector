@@ -1,5 +1,7 @@
 #pragma once
 
+#include "seriesdatakeeper.h"
+
 #include <QString>
 #include <QObject>
 
@@ -13,6 +15,7 @@ public:
     ~ThreadMgr();
     void start();
     void stop();
+    SeriesDataKeeper * getSeriesDataKeeper() const;
 
 private:
     ThreadMgr(const ThreadMgr &) = delete;
