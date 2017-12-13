@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "singleton.h"
+
 using std::unique_ptr;
 using std::make_unique;
 
@@ -33,6 +35,11 @@ SeriesSelectorWizardPage::SeriesSelectorWizardPage(QWidget *parent)
     pimpl_->vbox_->addWidget(pimpl_->createGui());
 
     setLayout(pimpl_->vbox_.get());
+
+    Singleton & singleton = Singleton::getOnlyInstance();
+    connect(pimpl_->penguins_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setPenguinsSlot()));
+    connect(pimpl_->clone_wars_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setCwSlot()));
+    connect(pimpl_->rebels_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setRebelsSlot()));
 }
 
 SeriesSelectorWizardPage::~SeriesSelectorWizardPage()

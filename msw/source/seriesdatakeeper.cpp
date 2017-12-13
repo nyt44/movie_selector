@@ -12,9 +12,9 @@ struct SeriesDataKeeper::Pimpl
     Pimpl();
 
     static uint16_t curr_id_;
-    std::unordered_map<uint16_t, std::pair<std::string, std::string>> all_clone_wars_;
+    std::unordered_map<uint16_t, std::pair<std::string, std::string>> all_;
     std::mutex all_mutex_;
-    std::array<std::queue<uint16_t>, 3> selected_clone_wars_;
+    std::array<std::queue<uint16_t>, 3> selected_;
     std::array<std::mutex, 3>  selected_mutex_;
     uint8_t no_queue_to_read_;
     uint8_t no_queue_to_write_;
@@ -39,16 +39,16 @@ SeriesDataKeeper::~SeriesDataKeeper()
 void SeriesDataKeeper::pushBackEpisode(std::string && path, std::string && desc)
 {
     std::lock_guard<std::mutex> _(pimpl_->all_mutex_);
-    pimpl_->all_clone_wars_[pimpl_->curr_id_++] = std::pair<std::string, std::string>(std::move(path), std::move(desc));
+    pimpl_->all_[pimpl_->curr_id_++] = std::pair<std::string, std::string>(std::move(path), std::move(desc));
 }
 
 std::string SeriesDataKeeper::getDesc(uint16_t id) const
 {
     std::lock_guard<std::mutex> _(pimpl_->all_mutex_);
 
-    auto found =  pimpl_->all_clone_wars_.find(id);
+    auto found =  pimpl_->all_.find(id);
 
-    if (found != pimpl_->all_clone_wars_.end())
+    if (found != pimpl_->all_.end())
     {
         return found->second.second;
     }
@@ -62,9 +62,9 @@ std::string SeriesDataKeeper::getPath(uint16_t id) const
 {
     std::lock_guard<std::mutex> _(pimpl_->all_mutex_);
 
-    auto found =  pimpl_->all_clone_wars_.find(id);
+    auto found =  pimpl_->all_.find(id);
 
-    if (found != pimpl_->all_clone_wars_.end())
+    if (found != pimpl_->all_.end())
     {
         return found->second.first;
     }
@@ -76,9 +76,9 @@ std::string SeriesDataKeeper::getPath(uint16_t id) const
 
 std::string SeriesDataKeeper::getPath(const std::string & desc)
 {
-    auto it = std::find_if(pimpl_->all_clone_wars_.begin(), pimpl_->all_clone_wars_.end(),
+    auto it = std::find_if(pimpl_->all_.begin(), pimpl_->all_.end(),
                            [desc](const auto & elem) { return desc == elem.second.second; });
-    if (it == pimpl_->all_clone_wars_.end())
+    if (it == pimpl_->all_.end())
     {
         return "";
     }
@@ -93,13 +93,13 @@ bool SeriesDataKeeper::getId(uint16_t & res) const
     std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
     std::lock_guard<std::mutex> _(pimpl_->selected_mutex_[pimpl_->no_queue_to_read_]);
 
-    if (pimpl_->selected_clone_wars_[pimpl_->no_queue_to_read_].empty())
+    if (pimpl_->selected_[pimpl_->no_queue_to_read_].empty())
     {
         return false;
     }
 
-    res = pimpl_->selected_clone_wars_[pimpl_->no_queue_to_read_].front();
-    pimpl_->selected_clone_wars_[pimpl_->no_queue_to_read_].pop();
+    res = pimpl_->selected_[pimpl_->no_queue_to_read_].front();
+    pimpl_->selected_[pimpl_->no_queue_to_read_].pop();
 
     return true;
 }
@@ -109,7 +109,7 @@ void SeriesDataKeeper::pushBackId(uint16_t id)
     std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
     std::lock_guard<std::mutex> _(pimpl_->selected_mutex_[pimpl_->no_queue_to_write_]);
 
-    pimpl_->selected_clone_wars_[pimpl_->no_queue_to_write_].push(id);
+    pimpl_->selected_[pimpl_->no_queue_to_write_].push(id);
 }
 
 void SeriesDataKeeper::startIdWriting()
@@ -117,9 +117,9 @@ void SeriesDataKeeper::startIdWriting()
     std::lock_guard<std::mutex> lk(pimpl_->queue_number_mutex_);
     std::lock_guard<std::mutex> _(pimpl_->selected_mutex_[pimpl_->no_queue_to_write_]);
 
-    while (!pimpl_->selected_clone_wars_[pimpl_->no_queue_to_write_].empty())
+    while (!pimpl_->selected_[pimpl_->no_queue_to_write_].empty())
     {
-        pimpl_->selected_clone_wars_[pimpl_->no_queue_to_write_].pop();
+        pimpl_->selected_[pimpl_->no_queue_to_write_].pop();
     }
 }
 

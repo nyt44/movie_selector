@@ -1,12 +1,15 @@
 #include "singleton.h"
 
 #include <fstream>
+#include <mutex>
 
 struct Singleton::Pimpl
 {
-    Pimpl() {}
+    Pimpl();
 
     std::ofstream err_stream_;
+    SeriesChoice series_choice_;
+    std::mutex choice_mutex_;
 };
 
 //Public methods
@@ -45,4 +48,35 @@ bool Singleton::logError(const std::string & msg) const
 void Singleton::updateSignal()
 {
     emit cloneWarsInitialized();
+}
+
+SeriesChoice Singleton::getSeriesChoice() const
+{
+    std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);
+    return pimpl_->series_choice_;
+}
+
+//Public slots
+
+void Singleton::setPenguinsSlot()
+{
+    std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);
+    pimpl_->series_choice_ = SeriesChoice::kPenguins;
+}
+
+void Singleton::setCwSlot()
+{
+    std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);
+    pimpl_->series_choice_ = SeriesChoice::kCloneWars;
+}
+
+void Singleton::setRebelsSlot()
+{
+    std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);
+    pimpl_->series_choice_ = SeriesChoice::kRebels;
+}
+
+//Private functions
+Singleton::Pimpl::Pimpl() : series_choice_(SeriesChoice::kCloneWars) //TODO: Should be kPenguins
+{
 }
