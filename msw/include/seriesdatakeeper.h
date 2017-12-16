@@ -42,3 +42,10 @@ public:
     virtual std::string subDirName() const override;
     virtual bool isGivenSeries(SeriesChoice choice) const override;
 };
+
+class PenDataKeeper : public SeriesDataKeeper
+{
+public:
+    virtual std::string subDirName() const override;
+    virtual bool isGivenSeries(SeriesChoice choice) const override;
+};

@@ -35,6 +35,7 @@ struct ThreadMgr::Pimpl
     Pimpl();
     ~Pimpl();
     void initFunc(SeriesDataKeeper * data_keeper);
+    void penInitFunc();
     void worker();
     void setCwRebPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs);
     void setIds(SeriesDataKeeper * data_keeper);
@@ -44,6 +45,7 @@ struct ThreadMgr::Pimpl
     Singleton & singleton_;
     std::unique_ptr<CwDataKeeper> cw_data_keeper_;
     std::unique_ptr<RebDataKeeper> reb_data_keeper_;
+    std::unique_ptr<PenDataKeeper> pen_data_keeper_;
     bool ready_;
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -81,15 +83,19 @@ void ThreadMgr::stop()
 SeriesDataKeeper * ThreadMgr::getSeriesDataKeeper() const
 {
     SeriesChoice series_choice = pimpl_->singleton_.getSeriesChoice();
+
     if (series_choice == SeriesChoice::kCloneWars)
     {
         return pimpl_->cw_data_keeper_.get();
     }
-    else
+    else if (series_choice == SeriesChoice::kRebels)
     {
       return pimpl_->reb_data_keeper_.get();
     }
-    //TODO else if for Penguins
+    else
+    {
+        return pimpl_->pen_data_keeper_.get();
+    }
 }
 
 //Slots
@@ -103,11 +109,14 @@ void ThreadMgr::newTextGivenSlot(const QString & new_text)
     {
         request.data_keeper = pimpl_->cw_data_keeper_.get();
     }
-    else
+    else if (series_choice == SeriesChoice::kRebels)
     {
       request.data_keeper = pimpl_->reb_data_keeper_.get();
     }
-    //TODO else if for Penguins
+    else
+    {
+        request.data_keeper = pimpl_->pen_data_keeper_.get();
+    }
     request.pattern = new_text.toStdString();
 
     std::lock_guard<std::mutex> _(pimpl_->mutex_);
@@ -120,7 +129,8 @@ ThreadMgr::Pimpl::Pimpl() : singleton_(Singleton::getOnlyInstance()),
                             ready_(false), stopped_(false),
                             work_thread_(&Pimpl::worker, this),
                             cw_data_keeper_(std::make_unique<CwDataKeeper>()),
-                            reb_data_keeper_(std::make_unique<RebDataKeeper>())
+                            reb_data_keeper_(std::make_unique<RebDataKeeper>()),
+                            pen_data_keeper_(std::make_unique<PenDataKeeper>())
 {
 }
 
@@ -161,6 +171,44 @@ void ThreadMgr::Pimpl::initFunc(SeriesDataKeeper * data_keeper)
         emit thread_mgr.updateSignal(data_keeper);
     }
 }
+
+void ThreadMgr::Pimpl::penInitFunc()
+{
+    std::vector<std::string>  paths;
+
+    for (auto & path : fs::recursive_directory_iterator(kBasePath + pen_data_keeper_->subDirName()))
+    {
+        paths.emplace_back(path.path().u8string());
+    }
+
+    std::regex movie_name_pattern(".*\\\\(\\d{1,3})_(\\d{1,3})_(.*)\\.mkv");
+    std::smatch episode_match;
+    std::regex two_underscores("__");
+    std::regex one_underscore("_");
+
+
+    for (auto & path : paths)
+    {
+        if (std::regex_match(path, episode_match, movie_name_pattern)
+                && episode_match.size() == 4)
+        {
+            std::string description = episode_match[3].str();
+            description = std::regex_replace(description, two_underscores, ", ");
+            description = std::regex_replace(description, one_underscore, " ");
+            description = episode_match[1].str() + ", " + episode_match[2].str() + " - " + description;
+
+            pen_data_keeper_->pushBackEpisode(std::move(path), std::move(description));
+        }
+    }
+
+    setIds(pen_data_keeper_.get());
+
+    if (pen_data_keeper_->isGivenSeries(singleton_.getSeriesChoice()))
+    {
+        emit thread_mgr.updateSignal(pen_data_keeper_.get());
+    }
+}
+
 void ThreadMgr::Pimpl::worker()
 {
     {
@@ -170,9 +218,11 @@ void ThreadMgr::Pimpl::worker()
 
     std::thread clone_wars_init_thread(&ThreadMgr::Pimpl::initFunc, this, cw_data_keeper_.get());
     std::thread rebels_init_thread(&ThreadMgr::Pimpl::initFunc, this, reb_data_keeper_.get());
+    std::thread penguins_init_thread(&ThreadMgr::Pimpl::penInitFunc, this);
 
     clone_wars_init_thread.join();
     rebels_init_thread.join();
+    penguins_init_thread.join();
 
     size_t queue_size;
     Task curr_task;

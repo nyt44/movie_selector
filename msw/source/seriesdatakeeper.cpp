@@ -187,3 +187,14 @@ bool RebDataKeeper::isGivenSeries(SeriesChoice choice) const
 {
     return choice == SeriesChoice::kRebels;
 }
+
+//PenDataKeeper overriden methods
+
+std::string PenDataKeeper::subDirName() const
+{
+    return "pingwiny z madagaskaru";
+}
+bool PenDataKeeper::isGivenSeries(SeriesChoice choice) const
+{
+    return choice == SeriesChoice::kPenguins;
+}

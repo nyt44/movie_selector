@@ -71,6 +71,6 @@ void Singleton::setRebelsSlot()
 }
 
 //Private functions
-Singleton::Pimpl::Pimpl() : series_choice_(SeriesChoice::kCloneWars) //TODO: Should be kPenguins
+Singleton::Pimpl::Pimpl() : series_choice_(SeriesChoice::kPenguins)
 {
 }
