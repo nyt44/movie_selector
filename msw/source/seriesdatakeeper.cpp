@@ -11,7 +11,7 @@ struct SeriesDataKeeper::Pimpl
 {
     Pimpl();
 
-    static uint16_t curr_id_;
+    uint16_t curr_id_;
     std::unordered_map<uint16_t, std::pair<std::string, std::string>> all_;
     std::mutex all_mutex_;
     std::array<std::queue<uint16_t>, 3> selected_;
@@ -23,8 +23,6 @@ struct SeriesDataKeeper::Pimpl
     std::atomic<bool> currently_reading_;
     std::atomic<bool> change_read_number_;
 };
-
-uint16_t SeriesDataKeeper::Pimpl::curr_id_ = 0u;
 
 //Public methods
 
@@ -162,14 +160,30 @@ uint16_t SeriesDataKeeper::mapSize() const
 
 SeriesDataKeeper::Pimpl::Pimpl()
     : no_queue_to_read_(0), no_queue_to_write_(1), no_next_read_(2),
-      currently_reading_(false), change_read_number_(false)
+      currently_reading_(false), change_read_number_(false),
+      curr_id_(0)
 {
 
 }
 
-//CwDataKeeper overriden method
+//CwDataKeeper overriden methods
 
 std::string CwDataKeeper::subDirName() const
 {
     return "Clone Wars";
+}
+bool CwDataKeeper::isGivenSeries(SeriesChoice choice) const
+{
+    return choice == SeriesChoice::kCloneWars;
+}
+
+//RebDataKeeper overriden methods
+
+std::string RebDataKeeper::subDirName() const
+{
+    return "Rebels";
+}
+bool RebDataKeeper::isGivenSeries(SeriesChoice choice) const
+{
+    return choice == SeriesChoice::kRebels;
 }

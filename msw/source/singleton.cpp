@@ -44,12 +44,6 @@ bool Singleton::logError(const std::string & msg) const
     return true;
 }
 
-
-void Singleton::updateSignal()
-{
-    emit cloneWarsInitialized();
-}
-
 SeriesChoice Singleton::getSeriesChoice() const
 {
     std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);

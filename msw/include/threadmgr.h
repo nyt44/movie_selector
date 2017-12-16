@@ -23,10 +23,13 @@ private:
     ThreadMgr & operator=(ThreadMgr &&) = delete;
 
     struct Pimpl;
+
     std::unique_ptr<Pimpl> pimpl_;
 
 public slots:
     void newTextGivenSlot(const QString & new_text);
+signals:
+    void updateSignal(SeriesDataKeeper * data_keeper);
 };
 
 extern ThreadMgr thread_mgr;

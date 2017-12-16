@@ -1,7 +1,6 @@
 #include "mainwizardpage.h"
 
 #include "singleton.h"
-#include "seriesdatakeeper.h"
 #include "threadmgr.h"
 
 #include <QBoxLayout>
@@ -55,8 +54,9 @@ MainWizardPage::~MainWizardPage()
 {
 }
 
-void MainWizardPage::updateEpisodeList()
+void MainWizardPage::updateEpisodeList(SeriesDataKeeper * data_keeper)
 {
+    pimpl_->series_data_keeper_ = data_keeper;
     pimpl_->episodes_list_model_->removeRows(0, pimpl_->episodes_list_model_->rowCount());
     pimpl_->episodes_list_items_->clear();
 

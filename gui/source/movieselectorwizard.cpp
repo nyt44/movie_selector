@@ -2,7 +2,6 @@
 
 #include "mainwizardpage.h"
 #include "seriesselectorwizardpage.h"
-#include "singleton.h"
 #include "threadmgr.h"
 
 struct MovieSelectorWizard::Pimpl
@@ -25,9 +24,8 @@ MovieSelectorWizard::MovieSelectorWizard(QWidget *parent)
 
     setWindowTitle(tr("Movie Selector"));
 
-    Singleton & singleton = Singleton::getOnlyInstance();
-    QObject::connect(&singleton, SIGNAL(cloneWarsInitialized()),
-                     pimpl_->episode_selector_page_.get(), SLOT(updateEpisodeList()));
+    QObject::connect(&thread_mgr, SIGNAL(updateSignal(SeriesDataKeeper*)),
+                     pimpl_->episode_selector_page_.get(), SLOT(updateEpisodeList(SeriesDataKeeper*)));
 
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "singleton.h"
+
 #include <string>
 #include <cstdint>
 #include <memory>
@@ -21,6 +23,7 @@ class SeriesDataKeeper
     void stopIdReading();
     uint16_t mapSize() const;
     virtual std::string subDirName() const = 0;
+    virtual bool isGivenSeries(SeriesChoice choice) const =0;
 private:
     struct Pimpl;
     std::unique_ptr<Pimpl> pimpl_;
@@ -30,4 +33,12 @@ class CwDataKeeper : public SeriesDataKeeper
 {
 public:
     virtual std::string subDirName() const override;
+    virtual bool isGivenSeries(SeriesChoice choice) const override;
+};
+
+class RebDataKeeper : public SeriesDataKeeper
+{
+public:
+    virtual std::string subDirName() const override;
+    virtual bool isGivenSeries(SeriesChoice choice) const override;
 };

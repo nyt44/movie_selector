@@ -1,5 +1,7 @@
 #pragma once
 
+#include "seriesdatakeeper.h"
+
 #include <QWizardPage>
 
 #include <memory>
@@ -15,7 +17,7 @@ public:
     std::string descToPath(const std::string & desc) const;
 
 public slots:
-    void updateEpisodeList();
+    void updateEpisodeList(SeriesDataKeeper * data_keeper);
 private:
     struct Pimpl;
     std::unique_ptr<Pimpl> pimpl_;
