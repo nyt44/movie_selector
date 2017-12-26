@@ -21,8 +21,9 @@
 
 namespace fs = std::experimental::filesystem;
 
-
-const std::string kBasePath = "E:\\dysk\\seriale\\";
+//const std::string kBasePath = "..\\";
+//const std::string kBasePath = "E:\\dysk\\seriale\\";
+const std::string kBasePath = "F:\\seriale\\";
 
 struct Task
 {
