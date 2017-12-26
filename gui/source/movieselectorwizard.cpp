@@ -6,6 +6,8 @@
 
 #include <Windows.h>
 #include <shellapi.h>
+#include <locale>
+#include <codecvt>
 
 struct MovieSelectorWizard::Pimpl
 {
@@ -42,7 +44,10 @@ void MovieSelectorWizard::accept()
     std::string sel_path = pimpl_->episode_selector_page_->descToPath(sel_desc);
 
     LPCWSTR mode = L"open";
-    std::wstring w_sel_path = std::wstring(sel_path.begin(), sel_path.end());
+
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    std::wstring w_sel_path = converter.from_bytes(sel_path);
+
     LPCWSTR file = w_sel_path.c_str();
 
     ShellExecute(nullptr, mode, file, nullptr, nullptr, SW_MAXIMIZE);
