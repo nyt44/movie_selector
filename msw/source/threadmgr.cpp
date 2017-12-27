@@ -297,7 +297,8 @@ void ThreadMgr::Pimpl::setCwRebPathsMap(SeriesDataKeeper * data_keeper, std::vec
 
         for (auto path_it = paths.begin(); path_it != paths.end(); ++path_it)
         {
-            if (std::regex_match(*path_it, file_match, file_pattern))
+            if (std::regex_match(*path_it, file_match, file_pattern)
+                    && false == std::regex_match(*path_it, std::regex(".*\\.txt")))
             {
                 file_matched = true;
                 std::string found_file = file_match[0].str();
