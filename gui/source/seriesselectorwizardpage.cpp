@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "singleton.h"
+#include "threadmgr.h"
 
 using std::unique_ptr;
 using std::make_unique;
@@ -40,6 +41,8 @@ SeriesSelectorWizardPage::SeriesSelectorWizardPage(QWidget *parent)
     connect(pimpl_->penguins_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setPenguinsSlot()));
     connect(pimpl_->clone_wars_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setCwSlot()));
     connect(pimpl_->rebels_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setRebelsSlot()));
+    connect(&singleton, SIGNAL(seriesTypeChangedSignal(const std::string &)),
+                     &thread_mgr, SLOT(seriesTypeChangedSlot(const std::string &)));
 }
 
 SeriesSelectorWizardPage::~SeriesSelectorWizardPage()

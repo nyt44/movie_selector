@@ -28,6 +28,7 @@ private:
 
 public slots:
     void newTextGivenSlot(const QString & new_text);
+    void seriesTypeChangedSlot(const std::string & search_str);
 signals:
     void updateSignal(SeriesDataKeeper * data_keeper);
 };

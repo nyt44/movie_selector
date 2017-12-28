@@ -22,8 +22,8 @@
 namespace fs = std::experimental::filesystem;
 
 //const std::string kBasePath = "..\\";
-//const std::string kBasePath = "E:\\dysk\\seriale\\";
-const std::string kBasePath = "F:\\seriale\\";
+const std::string kBasePath = "E:\\dysk\\seriale\\";
+//const std::string kBasePath = "F:\\seriale\\";
 
 struct Task
 {
@@ -41,6 +41,7 @@ struct ThreadMgr::Pimpl
     void setCwRebPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs);
     void setIds(SeriesDataKeeper * data_keeper);
     void process(const Task & task);
+    void addNewTask(const std::string & new_text);
 
 
     Singleton & singleton_;
@@ -103,25 +104,12 @@ SeriesDataKeeper * ThreadMgr::getSeriesDataKeeper() const
 
 void ThreadMgr::newTextGivenSlot(const QString & new_text)
 {
-    SeriesChoice series_choice = pimpl_->singleton_.getSeriesChoice();
-    Task request;
+    pimpl_->addNewTask(new_text.toStdString());
+}
 
-    if (series_choice == SeriesChoice::kCloneWars)
-    {
-        request.data_keeper = pimpl_->cw_data_keeper_.get();
-    }
-    else if (series_choice == SeriesChoice::kRebels)
-    {
-      request.data_keeper = pimpl_->reb_data_keeper_.get();
-    }
-    else
-    {
-        request.data_keeper = pimpl_->pen_data_keeper_.get();
-    }
-    request.pattern = new_text.toStdString();
-
-    std::lock_guard<std::mutex> _(pimpl_->mutex_);
-    pimpl_->task_queue_.push(request);
+void ThreadMgr::seriesTypeChangedSlot(const std::string & search_str)
+{
+    pimpl_->addNewTask(search_str);
 }
 
 //Private functions
@@ -344,4 +332,26 @@ void ThreadMgr::Pimpl::process(const Task & task)
     data_keeper->stopIdWriting();
 
     emit thread_mgr.updateSignal(data_keeper);
+}
+void ThreadMgr::Pimpl::addNewTask(const std::string & new_text)
+{
+    SeriesChoice series_choice = singleton_.getSeriesChoice();
+    Task request;
+
+    if (series_choice == SeriesChoice::kCloneWars)
+    {
+        request.data_keeper = cw_data_keeper_.get();
+    }
+    else if (series_choice == SeriesChoice::kRebels)
+    {
+      request.data_keeper = reb_data_keeper_.get();
+    }
+    else
+    {
+        request.data_keeper = pen_data_keeper_.get();
+    }
+    request.pattern = new_text;
+
+    std::lock_guard<std::mutex> _(mutex_);
+    task_queue_.push(request);
 }

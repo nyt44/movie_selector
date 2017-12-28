@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <QString>
 
 enum class SeriesChoice
 {
@@ -25,6 +26,10 @@ public slots:
     void setPenguinsSlot();
     void setCwSlot();
     void setRebelsSlot();
+    void updateSearchStrSlot(const QString & search_str);
+
+signals:
+    void seriesTypeChangedSignal(const std::string &);
 
 private:
     Singleton();

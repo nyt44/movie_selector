@@ -48,6 +48,10 @@ MainWizardPage::MainWizardPage(QWidget *parent)
 
     QObject::connect(pimpl_->search_edit_.get(), SIGNAL(textChanged(const QString &)),
                      &thread_mgr, SLOT(newTextGivenSlot(const QString & )));
+
+    Singleton & singleton = Singleton::getOnlyInstance();
+    QObject::connect(pimpl_->search_edit_.get(), SIGNAL(textChanged(const QString &)),
+                     &singleton, SLOT(updateSearchStrSlot(const QString &)));
 }
 
 MainWizardPage::~MainWizardPage()
