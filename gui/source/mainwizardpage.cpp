@@ -123,6 +123,7 @@ QListView * MainWizardPage::Pimpl::createEpisodesList()
 {
 
     episodes_list_ = make_unique<QListView>();
+    episodes_list_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     episodes_list_items_ = make_unique<QStringList>();
     episodes_list_model_ = make_unique<QStringListModel>(*episodes_list_items_, nullptr);
     episodes_list_->setModel(episodes_list_model_.get());
