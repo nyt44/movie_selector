@@ -18,6 +18,7 @@
 #include <queue>
 #include <atomic>
 #include <chrono>
+#include <algorithm>
 
 namespace fs = std::experimental::filesystem;
 
@@ -175,6 +176,24 @@ void ThreadMgr::Pimpl::penInitFunc()
     std::regex two_underscores("__");
     std::regex one_underscore("_");
 
+    std::remove_if(paths.begin(), paths.end(), [movie_name_pattern](const std::string & path)
+    {
+        return false == std::regex_match(path, movie_name_pattern);
+    });
+
+    std::sort(paths.begin(), paths.end(), [movie_name_pattern](const std::string & lhs, const std::string & rhs)
+    {
+        std::smatch lhs_match, rhs_match;
+        int l_episode, r_episode;
+
+        std::regex_match(lhs, lhs_match, movie_name_pattern);
+        std::istringstream(lhs_match[1]) >> l_episode;
+
+        std::regex_match(rhs, rhs_match, movie_name_pattern);
+        std::istringstream(rhs_match[1]) >> r_episode;
+
+        return l_episode < r_episode;
+    });
 
     for (auto & path : paths)
     {
