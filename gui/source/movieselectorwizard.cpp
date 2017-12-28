@@ -28,6 +28,7 @@ MovieSelectorWizard::MovieSelectorWizard(QWidget *parent)
     addPage(pimpl_->episode_selector_page_.get());
 
     setWindowTitle(tr("Movie Selector"));
+    setButtonText(QWizard::FinishButton, tr("Play"));
 
     QObject::connect(&thread_mgr, SIGNAL(updateSignal(SeriesDataKeeper*)),
                      pimpl_->episode_selector_page_.get(), SLOT(updateEpisodeList(SeriesDataKeeper*)));
