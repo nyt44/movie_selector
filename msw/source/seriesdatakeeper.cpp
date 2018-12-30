@@ -159,9 +159,12 @@ uint16_t SeriesDataKeeper::mapSize() const
 //Private functions
 
 SeriesDataKeeper::Pimpl::Pimpl()
-    : no_queue_to_read_(0), no_queue_to_write_(1), no_next_read_(2),
-      currently_reading_(false), change_read_number_(false),
-      curr_id_(0)
+    : curr_id_(0),
+      no_queue_to_read_(0),
+      no_queue_to_write_(1),
+      no_next_read_(2),
+      currently_reading_(false),
+      change_read_number_(false)
 {
 
 }

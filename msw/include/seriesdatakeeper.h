@@ -10,7 +10,7 @@ class SeriesDataKeeper
 {
   public:
     SeriesDataKeeper();
-    ~SeriesDataKeeper();
+    virtual ~SeriesDataKeeper();
     void pushBackEpisode(std::string && path, std::string && desc);
     std::string getDesc(uint16_t id) const;
     std::string getPath(uint16_t id) const;

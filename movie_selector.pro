@@ -22,7 +22,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-INCLUDEPATH = gui/include/ msw/include
+INCLUDEPATH = gui/include/ \
+              msw/include \
+              /usr/include/glib-2.0 \
+              /usr/lib/x86_64-linux-gnu/glib-2.0/include/
+
+LIBS += -lglib-2.0 -lstdc++fs
 
 SOURCES += \
     msw/source/main.cpp \
@@ -31,7 +36,9 @@ SOURCES += \
     gui/source/seriesselectorwizardpage.cpp \
     msw/source/singleton.cpp \
     msw/source/threadmgr.cpp \
-    msw/source/seriesdatakeeper.cpp
+    msw/source/seriesdatakeeper.cpp \
+    msw/source/windowsrunner.cpp \
+    msw/source/unixrunner.cpp
 
 HEADERS += \
     gui/include/mainwizardpage.h \
@@ -39,4 +46,7 @@ HEADERS += \
     gui/include/seriesselectorwizardpage.h \
     msw/include/singleton.h \
     msw/include/threadmgr.h \
-    msw/include/seriesdatakeeper.h
+    msw/include/seriesdatakeeper.h \
+    msw/include/runnerinterface.h \
+    msw/include/windowsrunner.h \
+    msw/include/unixrunner.h

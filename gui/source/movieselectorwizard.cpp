@@ -4,10 +4,11 @@
 #include "seriesselectorwizardpage.h"
 #include "threadmgr.h"
 
-#include <Windows.h>
-#include <shellapi.h>
-#include <locale>
-#include <codecvt>
+#ifdef _WIN32
+#include "windowsrunner.h"
+#else
+#include "unixrunner.h"
+#endif
 
 struct MovieSelectorWizard::Pimpl
 {
@@ -44,14 +45,14 @@ void MovieSelectorWizard::accept()
     std:: string sel_desc =pimpl_->episode_selector_page_->getSelectedEpisode();
     std::string sel_path = pimpl_->episode_selector_page_->descToPath(sel_desc);
 
-    LPCWSTR mode = L"open";
+#ifdef _WIN32
+    WindowsRunner runner_obj{sel_path};
+#else
+    UnixRunner runner_obj{sel_path};
+#endif
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    std::wstring w_sel_path = converter.from_bytes(sel_path);
-
-    LPCWSTR file = w_sel_path.c_str();
-
-    ShellExecute(nullptr, mode, file, nullptr, nullptr, SW_MAXIMIZE);
+    RunnerInterface& runner = runner_obj;
+    runner.run();
 }
 void MovieSelectorWizard::reject()
 {

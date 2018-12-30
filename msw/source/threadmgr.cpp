@@ -11,7 +11,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <deque>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <regex>
 #include <sstream>
 #include <iomanip>
@@ -22,9 +22,10 @@
 
 namespace fs = std::experimental::filesystem;
 
-//const std::string kBasePath = "..\\";
-const std::string kBasePath = "E:\\dysk\\seriale\\";
-//const std::string kBasePath = "F:\\seriale\\";
+//const std::string kBasePath = "../";
+//const std::string kBasePath = "E:/dysk/seriale/";
+//const std::string kBasePath = "F:/seriale/";
+const std::string kBasePath = "/media/tomasz/TOSHIBA EXT/seriale/";
 
 struct Task
 {
@@ -43,6 +44,8 @@ struct ThreadMgr::Pimpl
     void setIds(SeriesDataKeeper * data_keeper);
     void process(const Task & task);
     void addNewTask(const std::string & new_text);
+    void win2unixPathConverter(std::string& path);
+    void unix2winPathConverter(std::string& path);
 
 
     Singleton & singleton_;
@@ -116,11 +119,12 @@ void ThreadMgr::seriesTypeChangedSlot(const std::string & search_str)
 //Private functions
 
 ThreadMgr::Pimpl::Pimpl() : singleton_(Singleton::getOnlyInstance()),
-                            ready_(false), stopped_(false),
-                            work_thread_(&Pimpl::worker, this),
                             cw_data_keeper_(std::make_unique<CwDataKeeper>()),
                             reb_data_keeper_(std::make_unique<RebDataKeeper>()),
-                            pen_data_keeper_(std::make_unique<PenDataKeeper>())
+                            pen_data_keeper_(std::make_unique<PenDataKeeper>()),
+                            ready_(false),
+                            work_thread_(&Pimpl::worker, this),
+                            stopped_(false)
 {
 }
 
@@ -131,7 +135,8 @@ ThreadMgr::Pimpl::~Pimpl()
 
 void ThreadMgr::Pimpl::initFunc(SeriesDataKeeper * data_keeper)
 {
-    std::string in_file_name = kBasePath + data_keeper->subDirName() + "\\opis odcinkow.txt";
+    std::string in_file_name = kBasePath + data_keeper->subDirName() + "/opis odcinkow.txt";
+    unix2winPathConverter(in_file_name);
 
     std::ifstream fin(in_file_name.c_str());
     if (!fin.is_open())
@@ -145,6 +150,7 @@ void ThreadMgr::Pimpl::initFunc(SeriesDataKeeper * data_keeper)
     std::vector<std::string> descriptions;
     while (fin)
     {
+        temp_str.erase(temp_str.find('\r'));
         if (!temp_str.empty())
         {
             descriptions.emplace_back(temp_str);
@@ -165,21 +171,25 @@ void ThreadMgr::Pimpl::initFunc(SeriesDataKeeper * data_keeper)
 void ThreadMgr::Pimpl::penInitFunc()
 {
     std::vector<std::string>  paths;
+    std::string series_dir_path = kBasePath + pen_data_keeper_->subDirName();
+    unix2winPathConverter(series_dir_path);
 
-    for (auto & path : fs::recursive_directory_iterator(kBasePath + pen_data_keeper_->subDirName()))
+    for (auto & path : fs::recursive_directory_iterator(series_dir_path))
     {
-        paths.emplace_back(path.path().u8string());
+        std::string path_str = path.path().u8string();
+        win2unixPathConverter(path_str);
+        paths.emplace_back(std::move(path_str));
     }
 
-    std::regex movie_name_pattern(".*\\\\(\\d{1,3})_(\\d{1,3})_(.*)\\.mkv");
+    std::regex movie_name_pattern(".*/(\\d{1,3})_(\\d{1,3})_(.*)\\.mkv");
     std::smatch episode_match;
     std::regex two_underscores("__");
     std::regex one_underscore("_");
 
-    std::remove_if(paths.begin(), paths.end(), [movie_name_pattern](const std::string & path)
+   paths.erase(std::remove_if(paths.begin(), paths.end(), [movie_name_pattern](const std::string & path)
     {
         return false == std::regex_match(path, movie_name_pattern);
-    });
+    }), paths.end());
 
     std::sort(paths.begin(), paths.end(), [movie_name_pattern](const std::string & lhs, const std::string & rhs)
     {
@@ -267,9 +277,14 @@ void ThreadMgr::Pimpl::worker()
 void ThreadMgr::Pimpl::setCwRebPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs)
 {
     std::deque<std::string>  paths;
-    for (auto & path : fs::recursive_directory_iterator(kBasePath + data_keeper->subDirName()))
+    std::string series_dir_path = kBasePath + data_keeper->subDirName();
+    unix2winPathConverter(series_dir_path);
+
+    for (auto & path : fs::recursive_directory_iterator(series_dir_path))
     {
-        paths.emplace_back(path.path().string());
+        std::string path_str = path.path().string();
+        win2unixPathConverter(path_str);
+        paths.emplace_back(std::move(path_str));
     }
     std::regex desc_entry_pattern("(\\d)\\.(\\d{1,2}) - .*");
     std::smatch season_and_episode_match;
@@ -326,7 +341,7 @@ void ThreadMgr::Pimpl::setIds(SeriesDataKeeper * data_keeper)
     data_keeper->startIdWriting();
 
     uint16_t series_amount = data_keeper->mapSize();
-    for (auto i = 0u; i < series_amount; ++i)
+    for (uint16_t i = 0u; i < series_amount; ++i)
     {
         data_keeper->pushBackId(i);
     }
@@ -341,7 +356,7 @@ void ThreadMgr::Pimpl::process(const Task & task)
     data_keeper->startIdWriting();
 
     uint16_t series_amount = data_keeper->mapSize();
-    for (auto i = 0u; i < series_amount; ++i)
+    for (uint16_t i = 0u; i < series_amount; ++i)
     {
         if (std::regex_match(data_keeper->getDesc(i), search_pattern))
         {
@@ -373,4 +388,33 @@ void ThreadMgr::Pimpl::addNewTask(const std::string & new_text)
 
     std::lock_guard<std::mutex> _(mutex_);
     task_queue_.push(request);
+}
+
+void ThreadMgr::Pimpl::win2unixPathConverter(std::string& path)
+{
+#ifdef _WIN32
+    for (auto& ch : path)
+    {
+        if (ch == '\\')
+        {
+            ch = '/';
+        }
+    }
+#else
+    (void)path;
+#endif
+}
+void ThreadMgr::Pimpl::unix2winPathConverter(std::string& path)
+{
+#ifdef _WIN32
+    for (auto& ch : path)
+    {
+        if (ch == '/')
+        {
+            ch = '\\';
+        }
+    }
+#else
+    (void)path;
+#endif
 }
