@@ -22,10 +22,10 @@
 
 namespace fs = std::experimental::filesystem;
 
-//const std::string kBasePath = "../";
+const std::string kBasePath = "../";
 //const std::string kBasePath = "E:/dysk/seriale/";
 //const std::string kBasePath = "F:/seriale/";
-const std::string kBasePath = "/media/tomasz/TOSHIBA EXT/seriale/";
+//const std::string kBasePath = "/media/tomasz/TOSHIBA EXT/seriale/";
 
 struct Task
 {
@@ -150,7 +150,12 @@ void ThreadMgr::Pimpl::initFunc(SeriesDataKeeper * data_keeper)
     std::vector<std::string> descriptions;
     while (fin)
     {
-        temp_str.erase(temp_str.find('\r'));
+        auto cr_pos = temp_str.find('\r');
+        if (cr_pos != std::string::npos)
+        {
+            temp_str.erase(cr_pos);
+        }
+
         if (!temp_str.empty())
         {
             descriptions.emplace_back(temp_str);

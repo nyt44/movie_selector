@@ -8,6 +8,13 @@
 
 WindowsRunner::WindowsRunner(std::string path) : path_{std::move(path)}
 {
+    for (auto& ch : path_)
+    {
+        if (ch == '/')
+        {
+            ch = '\\';
+        }
+    }
 }
 
 void WindowsRunner::run()

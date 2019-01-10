@@ -1,4 +1,5 @@
 Makefile*
 .qmake.stash
 debug/*
-movie_selector.pro.user.*
+movie_selector.pro.user*
+

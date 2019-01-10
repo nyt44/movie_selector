@@ -23,11 +23,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 INCLUDEPATH = gui/include/ \
-              msw/include \
-              /usr/include/glib-2.0 \
-              /usr/lib/x86_64-linux-gnu/glib-2.0/include/
+              msw/include
 
-LIBS += -lglib-2.0 -lstdc++fs
+unix:INCLUDEPATH += /usr/include/glib-2.0 \
+                    /usr/lib/x86_64-linux-gnu/glib-2.0/include/
+
+unix:LIBS += -lglib-2.0 -lstdc++fs
 
 SOURCES += \
     msw/source/main.cpp \
@@ -36,9 +37,10 @@ SOURCES += \
     gui/source/seriesselectorwizardpage.cpp \
     msw/source/singleton.cpp \
     msw/source/threadmgr.cpp \
-    msw/source/seriesdatakeeper.cpp \
-    msw/source/windowsrunner.cpp \
-    msw/source/unixrunner.cpp
+    msw/source/seriesdatakeeper.cpp
+
+win32:SOURCES += msw/source/windowsrunner.cpp
+unix:SOURCES += msw/source/unixrunner.cpp
 
 HEADERS += \
     gui/include/mainwizardpage.h \
@@ -47,6 +49,7 @@ HEADERS += \
     msw/include/singleton.h \
     msw/include/threadmgr.h \
     msw/include/seriesdatakeeper.h \
-    msw/include/runnerinterface.h \
-    msw/include/windowsrunner.h \
-    msw/include/unixrunner.h
+    msw/include/runnerinterface.h
+
+win32:HEADERS += msw/include/windowsrunner.h
+unix:HEADERS += msw/include/unixrunner.h
