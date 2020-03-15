@@ -86,6 +86,28 @@ void Singleton::setRebelsSlot()
     emit seriesTypeChangedSignal(copied_temp_str);
 }
 
+void Singleton::setMandalorianSlot()
+{
+    std::string copied_temp_str;
+    {
+        std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);
+        pimpl_->series_choice_ = SeriesChoice::kMandalorian;
+        copied_temp_str = pimpl_->search_str_;
+    }
+    emit seriesTypeChangedSignal(copied_temp_str);
+}
+
+void Singleton::setWitcherSlot()
+{
+    std::string copied_temp_str;
+    {
+        std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);
+        pimpl_->series_choice_ = SeriesChoice::kWither;
+        copied_temp_str = pimpl_->search_str_;
+    }
+    emit seriesTypeChangedSignal(copied_temp_str);
+}
+
 void Singleton::updateSearchStrSlot(const QString & search_str)
 {
     std::lock_guard<std::mutex> _(pimpl_->choice_mutex_);

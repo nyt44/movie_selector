@@ -21,6 +21,8 @@ struct SeriesSelectorWizardPage::Pimpl
   unique_ptr<QRadioButton> penguins_radio_;
   unique_ptr<QRadioButton> clone_wars_radio_;
   unique_ptr<QRadioButton> rebels_radio_;
+  unique_ptr<QRadioButton> mandalorian_radio_;
+  unique_ptr<QRadioButton> witcher_radio_;
   unique_ptr<QVBoxLayout> radio_layout_;
 };
 
@@ -41,6 +43,8 @@ SeriesSelectorWizardPage::SeriesSelectorWizardPage(QWidget *parent)
     connect(pimpl_->penguins_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setPenguinsSlot()));
     connect(pimpl_->clone_wars_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setCwSlot()));
     connect(pimpl_->rebels_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setRebelsSlot()));
+    connect(pimpl_->mandalorian_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setMandalorianSlot()));
+    connect(pimpl_->witcher_radio_.get(), SIGNAL(clicked()), &singleton, SLOT(setWitcherSlot()));
     connect(&singleton, SIGNAL(seriesTypeChangedSignal(const std::string &)),
                      &thread_mgr, SLOT(seriesTypeChangedSlot(const std::string &)));
 }
@@ -58,12 +62,16 @@ QGroupBox * SeriesSelectorWizardPage::Pimpl::createGui()
     penguins_radio_ = make_unique<QRadioButton>(tr("The Penguins of Madagascar"));
     clone_wars_radio_ = make_unique<QRadioButton>(tr("Star Wars: The Clone Wars"));
     rebels_radio_ = make_unique<QRadioButton>(tr("Star Wars: Rebels"));
+    mandalorian_radio_ = make_unique<QRadioButton>(tr("Star Wars: The Mandalorian"));
+    witcher_radio_ = make_unique<QRadioButton>(tr("The Witcher"));
     penguins_radio_->setChecked(true);
 
     radio_layout_ = make_unique<QVBoxLayout>();
     radio_layout_->addWidget(penguins_radio_.get());
     radio_layout_->addWidget(clone_wars_radio_.get());
     radio_layout_->addWidget(rebels_radio_.get());
+    radio_layout_->addWidget(mandalorian_radio_.get());
+    radio_layout_->addWidget(witcher_radio_.get());
 
     series_group_->setLayout(radio_layout_.get());
 

@@ -201,3 +201,25 @@ bool PenDataKeeper::isGivenSeries(SeriesChoice choice) const
 {
     return choice == SeriesChoice::kPenguins;
 }
+
+//MandalorianDataKeeper overriden methods
+
+std::string MandalorianDataKeeper::subDirName() const
+{
+    return "mandalorian";
+}
+bool MandalorianDataKeeper::isGivenSeries(SeriesChoice choice) const
+{
+    return choice == SeriesChoice::kMandalorian;
+}
+
+//WitcherDataKeeper overriden methods
+
+std::string WitcherDataKeeper::subDirName() const
+{
+    return "witcher";
+}
+bool WitcherDataKeeper::isGivenSeries(SeriesChoice choice) const
+{
+    return choice == SeriesChoice::kWither;
+}

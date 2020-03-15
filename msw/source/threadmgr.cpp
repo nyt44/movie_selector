@@ -52,6 +52,8 @@ struct ThreadMgr::Pimpl
     std::unique_ptr<CwDataKeeper> cw_data_keeper_;
     std::unique_ptr<RebDataKeeper> reb_data_keeper_;
     std::unique_ptr<PenDataKeeper> pen_data_keeper_;
+    std::unique_ptr<MandalorianDataKeeper> mando_data_keeper_;
+    std::unique_ptr<WitcherDataKeeper> witcher_data_keeper_;
     bool ready_;
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -98,6 +100,14 @@ SeriesDataKeeper * ThreadMgr::getSeriesDataKeeper() const
     {
       return pimpl_->reb_data_keeper_.get();
     }
+    else if (series_choice == SeriesChoice::kMandalorian)
+    {
+      return pimpl_->mando_data_keeper_.get();
+    }
+    else if (series_choice == SeriesChoice::kWither)
+    {
+      return pimpl_->witcher_data_keeper_.get();
+    }
     else
     {
         return pimpl_->pen_data_keeper_.get();
@@ -122,6 +132,8 @@ ThreadMgr::Pimpl::Pimpl() : singleton_(Singleton::getOnlyInstance()),
                             cw_data_keeper_(std::make_unique<CwDataKeeper>()),
                             reb_data_keeper_(std::make_unique<RebDataKeeper>()),
                             pen_data_keeper_(std::make_unique<PenDataKeeper>()),
+                            mando_data_keeper_(std::make_unique<MandalorianDataKeeper>()),
+                            witcher_data_keeper_(std::make_unique<WitcherDataKeeper>()),
                             ready_(false),
                             work_thread_(&Pimpl::worker, this),
                             stopped_(false)
@@ -242,10 +254,14 @@ void ThreadMgr::Pimpl::worker()
     std::thread clone_wars_init_thread(&ThreadMgr::Pimpl::initFunc, this, cw_data_keeper_.get());
     std::thread rebels_init_thread(&ThreadMgr::Pimpl::initFunc, this, reb_data_keeper_.get());
     std::thread penguins_init_thread(&ThreadMgr::Pimpl::penInitFunc, this);
+    std::thread mando_init_thread(&ThreadMgr::Pimpl::initFunc, this, mando_data_keeper_.get());
+    std::thread witcher_init_thread(&ThreadMgr::Pimpl::initFunc, this, witcher_data_keeper_.get());
 
     clone_wars_init_thread.join();
     rebels_init_thread.join();
     penguins_init_thread.join();
+    mando_init_thread.join();
+    witcher_init_thread.join();
 
     size_t queue_size;
     Task curr_task;
@@ -383,7 +399,15 @@ void ThreadMgr::Pimpl::addNewTask(const std::string & new_text)
     }
     else if (series_choice == SeriesChoice::kRebels)
     {
-      request.data_keeper = reb_data_keeper_.get();
+        request.data_keeper = reb_data_keeper_.get();
+    }
+    else if (series_choice == SeriesChoice::kMandalorian)
+    {
+        request.data_keeper = mando_data_keeper_.get();
+    }
+    else if (series_choice == SeriesChoice::kWither)
+    {
+        request.data_keeper = witcher_data_keeper_.get();
     }
     else
     {

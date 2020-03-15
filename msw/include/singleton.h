@@ -10,7 +10,9 @@ enum class SeriesChoice
 {
     kPenguins = 0u,
     kCloneWars,
-    kRebels
+    kRebels,
+    kMandalorian,
+    kWither
 };
 
 class Singleton : public QObject
@@ -26,6 +28,8 @@ public slots:
     void setPenguinsSlot();
     void setCwSlot();
     void setRebelsSlot();
+    void setMandalorianSlot();
+    void setWitcherSlot();
     void updateSearchStrSlot(const QString & search_str);
 
 signals:
