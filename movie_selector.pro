@@ -10,7 +10,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = movie_selector
 TEMPLATE = app
-QMAKE_CXXFLAGS += /std:c++17
+
+win32:QMAKE_CXXFLAGS += /std:c++17
+unix:QMAKE_CXXFLAGS += -std=c++17
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
