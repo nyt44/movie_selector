@@ -243,7 +243,7 @@ void ThreadMgr::Pimpl::setPathsMap(SeriesDataKeeper * data_keeper, std::vector<s
 
     for (auto & path : fs::recursive_directory_iterator(series_dir_path))
     {
-        std::string path_str = path.path().string();
+        std::string path_str = path.path().u8string();
         win2unixPathConverter(path_str);
         paths.emplace_back(std::move(path_str));
     }
