@@ -38,9 +38,8 @@ struct ThreadMgr::Pimpl
     Pimpl();
     ~Pimpl();
     void initFunc(SeriesDataKeeper * data_keeper);
-    void penInitFunc();
     void worker();
-    void setCwRebPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs);
+    void setPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs);
     void setIds(SeriesDataKeeper * data_keeper);
     void process(const Task & task);
     void addNewTask(const std::string & new_text);
@@ -175,72 +174,13 @@ void ThreadMgr::Pimpl::initFunc(SeriesDataKeeper * data_keeper)
         std::getline(fin, temp_str);
     }
 
-    setCwRebPathsMap(data_keeper, descriptions);
+    setPathsMap(data_keeper, descriptions);
     setIds(data_keeper);
 
 
     if (data_keeper->isGivenSeries(singleton_.getSeriesChoice()))
     {
         emit thread_mgr.updateSignal(data_keeper);
-    }
-}
-
-void ThreadMgr::Pimpl::penInitFunc()
-{
-    std::vector<std::string>  paths;
-    std::string series_dir_path = kBasePath + pen_data_keeper_->subDirName();
-    unix2winPathConverter(series_dir_path);
-
-    for (auto & path : fs::recursive_directory_iterator(series_dir_path))
-    {
-        std::string path_str = path.path().u8string();
-        win2unixPathConverter(path_str);
-        paths.emplace_back(std::move(path_str));
-    }
-
-    std::regex movie_name_pattern(".*/(\\d{1,3})_(\\d{1,3})_(.*)\\.mkv");
-    std::smatch episode_match;
-    std::regex two_underscores("__");
-    std::regex one_underscore("_");
-
-   paths.erase(std::remove_if(paths.begin(), paths.end(), [movie_name_pattern](const std::string & path)
-    {
-        return false == std::regex_match(path, movie_name_pattern);
-    }), paths.end());
-
-    std::sort(paths.begin(), paths.end(), [movie_name_pattern](const std::string & lhs, const std::string & rhs)
-    {
-        std::smatch lhs_match, rhs_match;
-        int l_episode, r_episode;
-
-        std::regex_match(lhs, lhs_match, movie_name_pattern);
-        std::istringstream(lhs_match[1]) >> l_episode;
-
-        std::regex_match(rhs, rhs_match, movie_name_pattern);
-        std::istringstream(rhs_match[1]) >> r_episode;
-
-        return l_episode < r_episode;
-    });
-
-    for (auto & path : paths)
-    {
-        if (std::regex_match(path, episode_match, movie_name_pattern)
-                && episode_match.size() == 4)
-        {
-            std::string description = episode_match[3].str();
-            description = std::regex_replace(description, two_underscores, ", ");
-            description = std::regex_replace(description, one_underscore, " ");
-            description = episode_match[1].str() + ", " + episode_match[2].str() + " - " + description;
-
-            pen_data_keeper_->pushBackEpisode(std::move(path), std::move(description));
-        }
-    }
-
-    setIds(pen_data_keeper_.get());
-
-    if (pen_data_keeper_->isGivenSeries(singleton_.getSeriesChoice()))
-    {
-        emit thread_mgr.updateSignal(pen_data_keeper_.get());
     }
 }
 
@@ -253,7 +193,7 @@ void ThreadMgr::Pimpl::worker()
 
     std::thread clone_wars_init_thread(&ThreadMgr::Pimpl::initFunc, this, cw_data_keeper_.get());
     std::thread rebels_init_thread(&ThreadMgr::Pimpl::initFunc, this, reb_data_keeper_.get());
-    std::thread penguins_init_thread(&ThreadMgr::Pimpl::penInitFunc, this);
+    std::thread penguins_init_thread(&ThreadMgr::Pimpl::initFunc, this, pen_data_keeper_.get());
     std::thread mando_init_thread(&ThreadMgr::Pimpl::initFunc, this, mando_data_keeper_.get());
     std::thread witcher_init_thread(&ThreadMgr::Pimpl::initFunc, this, witcher_data_keeper_.get());
 
@@ -295,7 +235,7 @@ void ThreadMgr::Pimpl::worker()
     }
 }
 
-void ThreadMgr::Pimpl::setCwRebPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs)
+void ThreadMgr::Pimpl::setPathsMap(SeriesDataKeeper * data_keeper, std::vector<std::string> & descs)
 {
     std::deque<std::string>  paths;
     std::string series_dir_path = kBasePath + data_keeper->subDirName();
