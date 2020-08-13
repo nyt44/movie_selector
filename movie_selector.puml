@@ -1,0 +1,47 @@
+@startuml
+
+SeriesSelectorWizardPage o-- Configuration
+Wizard *-- SeriesSelectorWizardPage
+Wizard *-- EpisodeSelectorWizardPage
+EpisodeSelectorWizardPage o-- MapCollector
+EpisodeSelectorWizardPage o-- Configuration
+MapCollector o-- Configuration
+Wizard o-- EpisodeRunner
+EpisodeRunner <|-- WindowsRunner
+EpisodeRunner <|-- LinuxRunner
+MapCollector ..> EpisodeInfo
+
+class Configuration {
+  std::string GetRootDir()
+  std::string GetSeriesName(int)
+  std::string GetSeriesDirName(int)
+  int GetSeriesCount()
+}
+
+class MapCollector {
+   const std::map<std::string, EpisodeInfo>& GetMap(int)
+}
+
+class EpisodeRunner {
+  {abstract} void run(std::string, std::string)
+}
+
+class WindowsRunner {
+  void run(std::string, std::string)
+}
+
+class LinuxRunner {
+  void run(std::string, std::string)
+}
+
+class EpisodeInfo {
+  std::string description
+  std::string movie_path
+  std::string subtitle_path
+}
+
+class EpisodeSelectorWizardPage {
+  std::vector<std::string> filtered_keys_
+}
+
+@enduml
