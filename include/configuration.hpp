@@ -10,7 +10,7 @@ public:
   Configuration(const char* json_path);
 
   std::string_view GetRootDir() const;
-  std::string_view GetSeriesName(int idx) const;
+  const char* GetSeriesName(int idx) const;
   std::string_view GetSeriesDirName(int idx) const;
   int GetSeriesCount() const;
 

@@ -26,9 +26,9 @@ std::string_view Configuration::GetRootDir() const
   return root_dir_;
 }
 
-std::string_view Configuration::GetSeriesName(int idx) const
+const char* Configuration::GetSeriesName(int idx) const
 {
-  return series_names_.at(idx);
+  return series_names_.at(idx).c_str();
 }
 
 std::string_view Configuration::GetSeriesDirName(int idx) const
