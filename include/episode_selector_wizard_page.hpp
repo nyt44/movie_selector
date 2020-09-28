@@ -12,6 +12,7 @@
 #include <QLineEdit>
 
 #include "configuration.hpp"
+#include "map_collector.hpp"
 
 class EpisodeSelectorWizardPage : public QWizardPage
 {
@@ -19,11 +20,17 @@ class EpisodeSelectorWizardPage : public QWizardPage
 public:
   EpisodeSelectorWizardPage(Configuration& config, QWidget *parent = 0);
 
+public slots:
+    void UpdateEpisodeList(int page_id);
+
 private:
   QGroupBox * createForm();
   QListView * createEpisodesList();
 
   Configuration& config_;
+  MapCollector map_collector_;
+  int current_id_;
+
   std::unique_ptr<QVBoxLayout> vbox_;
   std::unique_ptr<QGroupBox> form_group_box_;
   std::unique_ptr<QLabel> search_label_;

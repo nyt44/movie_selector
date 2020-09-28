@@ -10,6 +10,9 @@ Wizard::Wizard(Configuration& config, QWidget* parent)
 
   setWindowTitle(tr("Movie Selector"));
   setButtonText(QWizard::FinishButton, tr("Play"));
+
+  QObject::connect(this, SIGNAL(currentIdChanged(int)),
+                   episode_selector_page_.get(), SLOT(UpdateEpisodeList(int)));
 }
 
 void Wizard::accept()

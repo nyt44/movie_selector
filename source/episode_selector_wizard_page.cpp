@@ -1,7 +1,12 @@
 #include "episode_selector_wizard_page.hpp"
 
+namespace
+{
+constexpr int kEpsiodeSelectorPageId = 1;
+} // namespace
+
 EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWidget *parent)
-  : QWizardPage(parent), config_{config}
+  : QWizardPage(parent), config_{config}, map_collector_{config}, current_id_{0}
 {
   setWindowTitle(tr("Episode selector"));
 
@@ -10,6 +15,24 @@ EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWid
   vbox_->addWidget(createEpisodesList());
 
   setLayout(vbox_.get());
+}
+
+void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
+{
+  if (page_id == kEpsiodeSelectorPageId)
+  {
+    episodes_list_model_->removeRows(0, episodes_list_model_->rowCount());
+    episodes_list_items_->clear();
+
+    const auto& current_series_map = map_collector_.GetMap(current_id_);
+
+    for (const auto& [unused, episode_info] : current_series_map)
+    {
+      episodes_list_items_->append(tr(episode_info.episode_description.c_str()));
+    }
+
+    episodes_list_model_->setStringList(*(episodes_list_items_));
+  }
 }
 
 QGroupBox * EpisodeSelectorWizardPage::createForm()
