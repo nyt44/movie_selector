@@ -35,6 +35,11 @@ void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
   }
 }
 
+void EpisodeSelectorWizardPage::SetCurrentId(int current_id)
+{
+  current_id_ = current_id;
+}
+
 QGroupBox * EpisodeSelectorWizardPage::createForm()
 {
   form_group_box_ = std::make_unique<QGroupBox>();

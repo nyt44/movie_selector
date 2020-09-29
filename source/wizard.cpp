@@ -13,6 +13,8 @@ Wizard::Wizard(Configuration& config, QWidget* parent)
 
   QObject::connect(this, SIGNAL(currentIdChanged(int)),
                    episode_selector_page_.get(), SLOT(UpdateEpisodeList(int)));
+  QObject::connect(series_selector_page_->button_group_.get(), SIGNAL(buttonClicked(int)),
+                   episode_selector_page_.get(), SLOT(SetCurrentId(int)));
 }
 
 void Wizard::accept()

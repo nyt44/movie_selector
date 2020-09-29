@@ -21,7 +21,8 @@ public:
   EpisodeSelectorWizardPage(Configuration& config, QWidget *parent = 0);
 
 public slots:
-    void UpdateEpisodeList(int page_id);
+  void UpdateEpisodeList(int page_id);
+  void SetCurrentId(int current_id);
 
 private:
   QGroupBox * createForm();

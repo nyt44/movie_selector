@@ -15,7 +15,7 @@ SeriesSelectorWizardPage::SeriesSelectorWizardPage(Configuration& config, QWidge
 QGroupBox * SeriesSelectorWizardPage::createGui()
 {
   series_group_ = std::make_unique<QGroupBox>(tr("Please select the series."));
-
+  button_group_ = std::make_unique<QButtonGroup>();
   auto radios_count = config_.GetSeriesCount();
   for (int i = 0; i < radios_count; ++i)
   {
@@ -27,6 +27,7 @@ QGroupBox * SeriesSelectorWizardPage::createGui()
   for (int i = 0; i < radios_count; ++i)
   {
     radio_layout_->addWidget(radio_buttons_.at(i).get());
+    button_group_->addButton(radio_buttons_.at(i).get(), i);
   }
 
   series_group_->setLayout(radio_layout_.get());
