@@ -25,34 +25,28 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-INCLUDEPATH = gui/include/ \
-              msw/include
+INCLUDEPATH = include
 
-unix:INCLUDEPATH += /usr/include/glib-2.0 \
-                    /usr/lib/x86_64-linux-gnu/glib-2.0/include/
+#unix:INCLUDEPATH += /usr/include/glib-2.0 \
+#                    /usr/lib/x86_64-linux-gnu/glib-2.0/include/
 
-unix:LIBS += -lglib-2.0 -lstdc++fs
+unix:LIBS += -lstdc++fs
 
 SOURCES += \
-    msw/source/main.cpp \
-    gui/source/mainwizardpage.cpp \
-    gui/source/movieselectorwizard.cpp \
-    gui/source/seriesselectorwizardpage.cpp \
-    msw/source/singleton.cpp \
-    msw/source/threadmgr.cpp \
-    msw/source/seriesdatakeeper.cpp
+    source/configuration.cpp \
+    source/episode_selector_wizard_page.cpp \
+    source/main.cpp \
+    source/map_collector.cpp \
+    source/series_selector_wizard_page.cpp \
+    source/wizard.cpp
 
-win32:SOURCES += msw/source/windowsrunner.cpp
-unix:SOURCES += msw/source/unixrunner.cpp
+#win32:SOURCES += source/windows_episode_runner.cpp
+unix:SOURCES += source/unix_episode_runner.cpp
 
 HEADERS += \
-    gui/include/mainwizardpage.h \
-    gui/include/movieselectorwizard.h \
-    gui/include/seriesselectorwizardpage.h \
-    msw/include/singleton.h \
-    msw/include/threadmgr.h \
-    msw/include/seriesdatakeeper.h \
-    msw/include/runnerinterface.h
-
-win32:HEADERS += msw/include/windowsrunner.h
-unix:HEADERS += msw/include/unixrunner.h
+    include/configuration.hpp \
+    include/episode_runner.hpp \
+    include/episode_selector_wizard_page.hpp \
+    include/map_collector.hpp \
+    include/series_selector_wizard_page.hpp \
+    include/wizard.hpp

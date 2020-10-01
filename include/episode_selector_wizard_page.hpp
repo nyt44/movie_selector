@@ -19,6 +19,7 @@ class EpisodeSelectorWizardPage : public QWizardPage
   Q_OBJECT
 public:
   EpisodeSelectorWizardPage(Configuration& config, QWidget *parent = 0);
+  std::string GetPathToSelectedEpisode();
 
 public slots:
   void UpdateEpisodeList(int page_id);

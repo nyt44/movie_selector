@@ -1,5 +1,7 @@
 #include "episode_selector_wizard_page.hpp"
 
+#include <algorithm>
+
 namespace
 {
 constexpr int kEpsiodeSelectorPageId = 1;
@@ -15,6 +17,23 @@ EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWid
   vbox_->addWidget(createEpisodesList());
 
   setLayout(vbox_.get());
+}
+
+std::string EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
+{
+  auto index = episodes_list_->currentIndex();
+  auto item_text = index.data(Qt::DisplayRole).toString().toStdString();
+
+  const auto& current_series_map = map_collector_.GetMap(current_id_);
+  auto found_element = std::find_if(current_series_map.begin(), current_series_map.end(), [&item_text](const auto& item)
+  {
+    return item.second.episode_description == item_text;
+  });
+  if (found_element == current_series_map.end())
+  {
+    throw std::runtime_error{"Cannot find selected episode description"};
+  }
+  return found_element->second.path_to_episode;
 }
 
 void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
