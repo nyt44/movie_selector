@@ -1,9 +1,16 @@
 #pragma once
 
-#include <string>
+#include <string_view>
+
+#include "configuration.hpp"
 
 class EpisodeRunner
 {
  public:
-  static void run(std::string path);
+  EpisodeRunner(Configuration& config);
+
+  void run(std::string_view path);
+
+ private:
+  Configuration& config_;
 };

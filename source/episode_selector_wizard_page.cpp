@@ -19,7 +19,7 @@ EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWid
   setLayout(vbox_.get());
 }
 
-std::string EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
+std::string_view EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
 {
   auto index = episodes_list_->currentIndex();
   auto item_text = index.data(Qt::DisplayRole).toString().toStdString();

@@ -1,11 +1,10 @@
 #include "wizard.hpp"
 
-#include "episode_runner.hpp"
-
 Wizard::Wizard(Configuration& config, QWidget* parent)
   : QWizard{parent},
     series_selector_page_{std::make_unique<SeriesSelectorWizardPage>(config, parent)},
-    episode_selector_page_{std::make_unique<EpisodeSelectorWizardPage>(config, parent)}
+    episode_selector_page_{std::make_unique<EpisodeSelectorWizardPage>(config, parent)},
+    runner_{config}
 {
   addPage(series_selector_page_.get());
   addPage(episode_selector_page_.get());
@@ -21,5 +20,5 @@ Wizard::Wizard(Configuration& config, QWidget* parent)
 
 void Wizard::accept()
 {
-  EpisodeRunner::run(episode_selector_page_->GetPathToSelectedEpisode());
+  runner_.run(episode_selector_page_->GetPathToSelectedEpisode());
 }

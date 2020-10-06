@@ -29,6 +29,7 @@ INCLUDEPATH = include
 
 #unix:INCLUDEPATH += /usr/include/glib-2.0 \
 #                    /usr/lib/x86_64-linux-gnu/glib-2.0/include/
+win32:INCLUDEPATH += C:/boost_1_74_0
 
 unix:LIBS += -lstdc++fs
 
@@ -40,7 +41,7 @@ SOURCES += \
     source/series_selector_wizard_page.cpp \
     source/wizard.cpp
 
-#win32:SOURCES += source/windows_episode_runner.cpp
+win32:SOURCES += source/windows_episode_runner.cpp
 unix:SOURCES += source/unix_episode_runner.cpp
 
 HEADERS += \

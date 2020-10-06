@@ -75,7 +75,7 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
 
     for (const auto & path : std::filesystem::recursive_directory_iterator(series_dir_path))
     {
-      file_path_str = path.path().generic_string();
+      file_path_str = path.path().u8string();
       if (std::regex_match(file_path_str, file_pattern)
               && false == std::regex_match(file_path_str, std::regex(".*\\.txt")))
       {

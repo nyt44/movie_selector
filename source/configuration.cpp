@@ -9,6 +9,7 @@ Configuration::Configuration(const char* json_path)
   boost::property_tree::json_parser::read_json(json_path, tree);
 
   root_dir_ = tree.get_child("root_dir").get_value<std::string>();
+  vlc_path_ = tree.get_child("vlc_path").get_value<std::string>();
 
   const auto& series_tree = tree.get_child("series");
   for (const auto& series : series_tree)
@@ -26,6 +27,11 @@ std::string_view Configuration::GetRootDir() const
   return root_dir_;
 }
 
+std::string_view  Configuration::GetVlcPath() const
+{
+  return vlc_path_;
+}
+
 const char* Configuration::GetSeriesName(int idx) const
 {
   return series_names_.at(idx).c_str();
@@ -38,5 +44,5 @@ std::string_view Configuration::GetSeriesDirName(int idx) const
 
 int Configuration::GetSeriesCount() const
 {
-  return series_names_.size();
+  return static_cast<int>(series_names_.size());
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <string>
+#include <string_view>
 
 #include <QWizardPage>
 #include <QBoxLayout>
@@ -19,7 +19,7 @@ class EpisodeSelectorWizardPage : public QWizardPage
   Q_OBJECT
 public:
   EpisodeSelectorWizardPage(Configuration& config, QWidget *parent = 0);
-  std::string GetPathToSelectedEpisode();
+  std::string_view GetPathToSelectedEpisode();
 
 public slots:
   void UpdateEpisodeList(int page_id);
