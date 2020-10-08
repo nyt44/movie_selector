@@ -1,6 +1,8 @@
 #include "episode_selector_wizard_page.hpp"
 
 #include <algorithm>
+#include <regex>
+#include <vector>
 
 namespace
 {
@@ -17,6 +19,9 @@ EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWid
   vbox_->addWidget(createEpisodesList());
 
   setLayout(vbox_.get());
+
+  QObject::connect(search_edit_.get(), SIGNAL(textChanged(const QString&)),
+                       this, SLOT(FilterEpisodeList(const QString&)));
 }
 
 std::string_view EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
@@ -40,6 +45,7 @@ void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
 {
   if (page_id == kEpsiodeSelectorPageId)
   {
+    search_edit_->clear();
     episodes_list_model_->removeRows(0, episodes_list_model_->rowCount());
     episodes_list_items_->clear();
 
@@ -57,6 +63,31 @@ void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
 void EpisodeSelectorWizardPage::SetCurrentId(int current_id)
 {
   current_id_ = current_id;
+}
+
+void EpisodeSelectorWizardPage::FilterEpisodeList(const QString& filter)
+{
+  std::regex search_pattern{".*" + filter.toStdString() + ".*", std::regex_constants::icase};
+  const auto& current_series_map = map_collector_.GetMap(current_id_);
+  std::vector<MapCollector::SeriesMap::const_iterator> iterators_to_filtered_elements;
+
+  for (auto it = current_series_map.begin(); it != current_series_map.end(); ++it)
+  {
+    if (std::regex_match(it->second.episode_description, search_pattern))
+    {
+      iterators_to_filtered_elements.emplace_back(it);
+    }
+  }
+
+  episodes_list_model_->removeRows(0, episodes_list_model_->rowCount());
+  episodes_list_items_->clear();
+
+  for (const auto& it : iterators_to_filtered_elements)
+  {
+    episodes_list_items_->append(tr(it->second.episode_description.c_str()));
+  }
+
+  episodes_list_model_->setStringList(*(episodes_list_items_));
 }
 
 QGroupBox * EpisodeSelectorWizardPage::createForm()

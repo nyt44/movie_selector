@@ -24,6 +24,7 @@ public:
 public slots:
   void UpdateEpisodeList(int page_id);
   void SetCurrentId(int current_id);
+  void FilterEpisodeList(const QString& filter);
 
 private:
   QGroupBox * createForm();
