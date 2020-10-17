@@ -24,7 +24,7 @@ EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWid
                        this, SLOT(FilterEpisodeList(const QString&)));
 }
 
-std::string_view EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
+std::pair<std::string_view, std::string_view> EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
 {
   auto index = episodes_list_->currentIndex();
   auto item_text = index.data(Qt::DisplayRole).toString().toStdString();
@@ -38,7 +38,8 @@ std::string_view EpisodeSelectorWizardPage::GetPathToSelectedEpisode()
   {
     throw std::runtime_error{"Cannot find selected episode description"};
   }
-  return found_element->second.path_to_episode;
+  return std::make_pair<std::string_view, std::string_view>(found_element->second.path_to_episode,
+                                                            found_element->second.subtitle_path);
 }
 
 void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)

@@ -69,25 +69,37 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
       continue;
     }
 
-    std::regex file_pattern(".*" + shortened + ".*");
+    std::regex file_pattern(".*" + shortened + ".*", std::regex_constants::icase);
+    std::regex sub_pattern{".*" + shortened + ".*\\.txt", std::regex_constants::icase};
     bool file_matched = false;
+    bool sub_matched = false;
+    std::string curr_path_str;
     std::string file_path_str;
+    std::string sub_path_str;
 
     for (const auto & path : std::filesystem::recursive_directory_iterator(series_dir_path))
     {
-      file_path_str = path.path().u8string();
-      if (std::regex_match(file_path_str, file_pattern)
-              && false == std::regex_match(file_path_str, std::regex(".*\\.txt")))
+      curr_path_str = path.path().string();
+      if (std::regex_match(curr_path_str, sub_pattern))
       {
+        sub_path_str = curr_path_str;
+        sub_matched = true;
+      }
+      else if (std::regex_match(curr_path_str, file_pattern))
+      {
+        file_path_str = curr_path_str;
         file_matched = true;
-        // TODO consider removing path after successfull match
+      }
+
+      if (file_matched && sub_matched)
+      {
         break;
       }
     }
+
     if (file_matched)
     {
-      // TODO what about subtitles?
-      result[shortened] = MapCollector::EpisodeInfo{desc, file_path_str, ""};
+      result[shortened] = MapCollector::EpisodeInfo{desc, file_path_str, sub_path_str};
     }
     else
     {

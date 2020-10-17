@@ -20,5 +20,6 @@ Wizard::Wizard(Configuration& config, QWidget* parent)
 
 void Wizard::accept()
 {
-  runner_.run(episode_selector_page_->GetPathToSelectedEpisode());
+  auto movie_and_subtitles = episode_selector_page_->GetPathToSelectedEpisode();
+  runner_.run(movie_and_subtitles.first, movie_and_subtitles.second);
 }
