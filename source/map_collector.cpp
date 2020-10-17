@@ -79,7 +79,7 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
 
     for (const auto & path : std::filesystem::recursive_directory_iterator(series_dir_path))
     {
-      curr_path_str = path.path().string();
+      curr_path_str = path.path().u8string();
       if (std::regex_match(curr_path_str, sub_pattern))
       {
         sub_path_str = curr_path_str;
