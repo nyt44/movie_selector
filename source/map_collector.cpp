@@ -8,16 +8,13 @@
 #include <sstream>
 #include <iomanip>
 
+namespace fs = std::filesystem;
+
 namespace
 {
-
-MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::string_view series_dir)
+std::vector<std::string> GetDescriptions(const fs::path& desc_file_path)
 {
-  MapCollector::SeriesMap result;
-
-  std::filesystem::path desc_file_path{root_dir};
-  desc_file_path /= series_dir;
-  desc_file_path /= "opis odcinkow.txt";
+  std::vector<std::string> result;
 
   std::ifstream desc_file(desc_file_path);
   if (!desc_file.is_open())
@@ -28,7 +25,6 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
 
   std::string desc_line;
   std::getline(desc_file, desc_line);
-  std::vector<std::string> descriptions;
   while (desc_file)
   {
     auto cr_pos = desc_line.find('\r');
@@ -39,13 +35,61 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
 
     if (!desc_line.empty())
     {
-        descriptions.emplace_back(desc_line);
+        result.emplace_back(desc_line);
     }
     std::getline(desc_file, desc_line);
   }
+  return result;
+}
 
-  std::filesystem::path series_dir_path{root_dir};
-  series_dir_path /= series_dir;
+MapCollector::EpisodeInfo SearchForEpisodeAndSubtitlePaths(const std::string& shortened,
+                                                           const fs::path& series_dir_path,
+                                                           const std::string& desc)
+{
+  std::regex file_pattern(".*" + shortened + ".*", std::regex_constants::icase);
+  std::regex sub_pattern{".*" + shortened + ".*\\.txt", std::regex_constants::icase};
+  bool file_matched = false;
+  bool sub_matched = false;
+  std::string curr_path_str;
+  std::string file_path_str;
+  std::string sub_path_str;
+
+  for (const auto & path : std::filesystem::recursive_directory_iterator(series_dir_path))
+  {
+    curr_path_str = path.path().u8string();
+    if (std::regex_match(curr_path_str, sub_pattern))
+    {
+      sub_path_str = curr_path_str;
+      sub_matched = true;
+    }
+    else if (std::regex_match(curr_path_str, file_pattern))
+    {
+      file_path_str = curr_path_str;
+      file_matched = true;
+    }
+
+    if (file_matched && sub_matched)
+    {
+      break;
+    }
+  }
+
+  if (!file_matched)
+  {
+    std::string err_msg = "\"" + desc + "\" - corresponding file not found";
+    throw std::runtime_error{err_msg};
+  }
+  return MapCollector::EpisodeInfo{desc, file_path_str, sub_path_str};;
+}
+
+MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::string_view series_dir)
+{
+  MapCollector::SeriesMap result;
+
+  fs::path desc_file_path{fs::path{root_dir} / series_dir / "opis odcinkow.txt"};
+  auto descriptions = GetDescriptions(desc_file_path);
+
+  fs::path series_dir_path{fs::path{root_dir} / series_dir};
   std::regex desc_entry_pattern("(\\d)\\.(\\d{1,2}) - .*");
   std::smatch season_and_episode_match;
 
@@ -65,47 +109,10 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
     }
     else
     {
-      // line has invalid format
       continue;
     }
 
-    std::regex file_pattern(".*" + shortened + ".*", std::regex_constants::icase);
-    std::regex sub_pattern{".*" + shortened + ".*\\.txt", std::regex_constants::icase};
-    bool file_matched = false;
-    bool sub_matched = false;
-    std::string curr_path_str;
-    std::string file_path_str;
-    std::string sub_path_str;
-
-    for (const auto & path : std::filesystem::recursive_directory_iterator(series_dir_path))
-    {
-      curr_path_str = path.path().u8string();
-      if (std::regex_match(curr_path_str, sub_pattern))
-      {
-        sub_path_str = curr_path_str;
-        sub_matched = true;
-      }
-      else if (std::regex_match(curr_path_str, file_pattern))
-      {
-        file_path_str = curr_path_str;
-        file_matched = true;
-      }
-
-      if (file_matched && sub_matched)
-      {
-        break;
-      }
-    }
-
-    if (file_matched)
-    {
-      result[shortened] = MapCollector::EpisodeInfo{desc, file_path_str, sub_path_str};
-    }
-    else
-    {
-      std::string err_msg = "\"" + desc + "\" - corresponding file not found";
-      throw std::runtime_error{err_msg};
-    }
+    result[shortened] = SearchForEpisodeAndSubtitlePaths(shortened, series_dir_path, desc);
   }
 
   return result;
