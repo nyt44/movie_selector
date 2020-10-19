@@ -10,7 +10,7 @@ constexpr int kEpsiodeSelectorPageId = 1;
 } // namespace
 
 EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWidget *parent)
-  : QWizardPage(parent), config_{config}, map_collector_{config}, current_id_{0}
+  : QWizardPage(parent), config_{config}, series_data_calculator_{config}, current_id_{0}
 {
   setWindowTitle(tr("Episode selector"));
 
@@ -29,17 +29,17 @@ std::pair<std::string_view, std::string_view> EpisodeSelectorWizardPage::GetPath
   auto index = episodes_list_->currentIndex();
   auto item_text = index.data(Qt::DisplayRole).toString().toStdString();
 
-  const auto& current_series_map = map_collector_.GetMap(current_id_);
-  auto found_element = std::find_if(current_series_map.begin(), current_series_map.end(), [&item_text](const auto& item)
+  const auto& current_series_data = series_data_calculator_.GetSeriesData(current_id_);
+  auto found_element = std::find_if(current_series_data.begin(), current_series_data.end(), [&item_text](const auto& item)
   {
-    return item.second.episode_description == item_text;
+    return item.episode_description == item_text;
   });
-  if (found_element == current_series_map.end())
+  if (found_element == current_series_data.end())
   {
     throw std::runtime_error{"Cannot find selected episode description"};
   }
-  return std::make_pair<std::string_view, std::string_view>(found_element->second.path_to_episode,
-                                                            found_element->second.subtitle_path);
+  return std::make_pair<std::string_view, std::string_view>(found_element->path_to_episode,
+                                                            found_element->subtitle_path);
 }
 
 void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
@@ -50,9 +50,9 @@ void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
     episodes_list_model_->removeRows(0, episodes_list_model_->rowCount());
     episodes_list_items_->clear();
 
-    const auto& current_series_map = map_collector_.GetMap(current_id_);
+    const auto& current_series_data = series_data_calculator_.GetSeriesData(current_id_);
 
-    for (const auto& [unused, episode_info] : current_series_map)
+    for (const auto& episode_info : current_series_data)
     {
       episodes_list_items_->append(tr(episode_info.episode_description.c_str()));
     }
@@ -69,12 +69,12 @@ void EpisodeSelectorWizardPage::SetCurrentId(int current_id)
 void EpisodeSelectorWizardPage::FilterEpisodeList(const QString& filter)
 {
   std::regex search_pattern{".*" + filter.toStdString() + ".*", std::regex_constants::icase};
-  const auto& current_series_map = map_collector_.GetMap(current_id_);
-  std::vector<MapCollector::SeriesMap::const_iterator> iterators_to_filtered_elements;
+  const auto& current_series_data = series_data_calculator_.GetSeriesData(current_id_);
+  std::vector<SeriesDataCalculator::SeriesData::const_iterator> iterators_to_filtered_elements;
 
-  for (auto it = current_series_map.begin(); it != current_series_map.end(); ++it)
+  for (auto it = current_series_data.begin(); it != current_series_data.end(); ++it)
   {
-    if (std::regex_match(it->second.episode_description, search_pattern))
+    if (std::regex_match(it->episode_description, search_pattern))
     {
       iterators_to_filtered_elements.emplace_back(it);
     }
@@ -85,7 +85,7 @@ void EpisodeSelectorWizardPage::FilterEpisodeList(const QString& filter)
 
   for (const auto& it : iterators_to_filtered_elements)
   {
-    episodes_list_items_->append(tr(it->second.episode_description.c_str()));
+    episodes_list_items_->append(tr(it->episode_description.c_str()));
   }
 
   episodes_list_model_->setStringList(*(episodes_list_items_));

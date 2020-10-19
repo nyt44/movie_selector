@@ -1,4 +1,4 @@
-#include "map_collector.hpp"
+#include "series_data_calculator.hpp"
 
 #include <string_view>
 #include <filesystem>
@@ -42,7 +42,7 @@ std::vector<std::string> GetDescriptions(const fs::path& desc_file_path)
   return result;
 }
 
-MapCollector::EpisodeInfo SearchForEpisodeAndSubtitlePaths(const std::string& shortened,
+SeriesDataCalculator::EpisodeInfo SearchForEpisodeAndSubtitlePaths(const std::string& shortened,
                                                            const fs::path& series_dir_path,
                                                            const std::string& desc)
 {
@@ -79,12 +79,12 @@ MapCollector::EpisodeInfo SearchForEpisodeAndSubtitlePaths(const std::string& sh
     std::string err_msg = "\"" + desc + "\" - corresponding file not found";
     throw std::runtime_error{err_msg};
   }
-  return MapCollector::EpisodeInfo{desc, file_path_str, sub_path_str};;
+  return SeriesDataCalculator::EpisodeInfo{desc, file_path_str, sub_path_str};;
 }
 
-MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::string_view series_dir)
+SeriesDataCalculator::SeriesData CalculateSeriesData(std::string_view root_dir, std::string_view series_dir)
 {
-  MapCollector::SeriesMap result;
+  SeriesDataCalculator::SeriesData result;
 
   fs::path desc_file_path{fs::path{root_dir} / series_dir / "opis odcinkow.txt"};
   auto descriptions = GetDescriptions(desc_file_path);
@@ -112,7 +112,7 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
       continue;
     }
 
-    result[shortened] = SearchForEpisodeAndSubtitlePaths(shortened, series_dir_path, desc);
+    result.emplace_back(SearchForEpisodeAndSubtitlePaths(shortened, series_dir_path, desc));
   }
 
   return result;
@@ -120,25 +120,25 @@ MapCollector::SeriesMap CalculateSeriesMap(std::string_view root_dir, std::strin
 
 } // namespace
 
-MapCollector::MapCollector(Configuration& config) : config_{config}
+SeriesDataCalculator::SeriesDataCalculator(Configuration& config) : config_{config}
 {
   auto number_of_series = config_.GetSeriesCount();
-  maps_getters_.reserve(number_of_series);
-  series_maps_.reserve(number_of_series);
+  data_getters_.reserve(number_of_series);
+  all_series_data_.reserve(number_of_series);
 
   for (int i = 0; i < number_of_series; ++i)
   {
-    maps_getters_.emplace_back(std::async(std::launch::async, CalculateSeriesMap, config_.GetRootDir(),
+    data_getters_.emplace_back(std::async(std::launch::async, CalculateSeriesData, config_.GetRootDir(),
                                           config_.GetSeriesDirName(i)));
-    series_maps_.emplace_back();
+    all_series_data_.emplace_back();
   }
 }
 
-const MapCollector::SeriesMap& MapCollector::GetMap(int idx)
+const SeriesDataCalculator::SeriesData& SeriesDataCalculator::GetSeriesData(int idx)
 {
-  if (maps_getters_[idx].valid())
+  if (data_getters_[idx].valid())
   {
-    series_maps_[idx] = maps_getters_[idx].get();
+    all_series_data_[idx] = data_getters_[idx].get();
   }
-  return series_maps_[idx];
+  return all_series_data_[idx];
 }

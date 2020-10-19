@@ -37,7 +37,7 @@ SOURCES += \
     source/configuration.cpp \
     source/episode_selector_wizard_page.cpp \
     source/main.cpp \
-    source/map_collector.cpp \
+    source/series_data_calculator.cpp \
     source/series_selector_wizard_page.cpp \
     source/wizard.cpp
 
@@ -48,6 +48,6 @@ HEADERS += \
     include/configuration.hpp \
     include/episode_runner.hpp \
     include/episode_selector_wizard_page.hpp \
-    include/map_collector.hpp \
+    include/series_data_calculator.hpp \
     include/series_selector_wizard_page.hpp \
     include/wizard.hpp

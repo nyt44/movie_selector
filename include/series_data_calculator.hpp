@@ -1,13 +1,12 @@
 #pragma once
 
 #include <string>
-#include <map>
 #include <vector>
 #include <future>
 
 #include "configuration.hpp"
 
-class MapCollector
+class SeriesDataCalculator
 {
  public:
   struct EpisodeInfo
@@ -16,14 +15,14 @@ class MapCollector
     std::string path_to_episode;
     std::string subtitle_path;
   };
-  using SeriesMap = std::map<std::string, EpisodeInfo>;
+  using SeriesData = std::vector<EpisodeInfo>;
 
-  explicit MapCollector(Configuration& config);
+  explicit SeriesDataCalculator(Configuration& config);
 
-  const SeriesMap& GetMap(int idx);
+  const SeriesData& GetSeriesData(int idx);
 
  private:
   Configuration& config_;
-  std::vector<std::future<SeriesMap>> maps_getters_;
-  std::vector<SeriesMap> series_maps_;
+  std::vector<std::future<SeriesData>> data_getters_;
+  std::vector<SeriesData> all_series_data_;
 };

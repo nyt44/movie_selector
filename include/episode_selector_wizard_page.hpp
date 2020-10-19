@@ -13,7 +13,7 @@
 #include <QLineEdit>
 
 #include "configuration.hpp"
-#include "map_collector.hpp"
+#include "series_data_calculator.hpp"
 
 class EpisodeSelectorWizardPage : public QWizardPage
 {
@@ -32,7 +32,7 @@ private:
   QListView * createEpisodesList();
 
   Configuration& config_;
-  MapCollector map_collector_;
+  SeriesDataCalculator series_data_calculator_;
   int current_id_;
 
   std::unique_ptr<QVBoxLayout> vbox_;
