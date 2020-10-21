@@ -15,8 +15,8 @@ EpisodeSelectorWizardPage::EpisodeSelectorWizardPage(Configuration& config, QWid
   setWindowTitle(tr("Episode selector"));
 
   vbox_ = std::make_unique<QVBoxLayout>();
-  vbox_->addWidget(createForm());
-  vbox_->addWidget(createEpisodesList());
+  vbox_->addWidget(CreateForm());
+  vbox_->addWidget(CreateEpisodesList());
 
   setLayout(vbox_.get());
 
@@ -47,8 +47,9 @@ void EpisodeSelectorWizardPage::UpdateEpisodeList(int page_id)
   if (page_id == kEpsiodeSelectorPageId)
   {
     search_edit_->clear();
-    episodes_list_model_->removeRows(0, episodes_list_model_->rowCount());
-    episodes_list_items_->clear();
+    DestroyEpisodeList();
+    constexpr int kEpisodEListIndex = 1;
+    vbox_->insertWidget(kEpisodEListIndex, CreateEpisodesList());
 
     const auto& current_series_data = series_data_calculator_.GetSeriesData(current_id_);
 
@@ -91,7 +92,7 @@ void EpisodeSelectorWizardPage::FilterEpisodeList(const QString& filter)
   episodes_list_model_->setStringList(*(episodes_list_items_));
 }
 
-QGroupBox * EpisodeSelectorWizardPage::createForm()
+QGroupBox * EpisodeSelectorWizardPage::CreateForm()
 {
   form_group_box_ = std::make_unique<QGroupBox>();
 
@@ -106,7 +107,7 @@ QGroupBox * EpisodeSelectorWizardPage::createForm()
   return form_group_box_.get();
 }
 
-QListView * EpisodeSelectorWizardPage::createEpisodesList()
+QListView * EpisodeSelectorWizardPage::CreateEpisodesList()
 {
 
   episodes_list_ = std::make_unique<QListView>();
@@ -116,4 +117,11 @@ QListView * EpisodeSelectorWizardPage::createEpisodesList()
   episodes_list_->setModel(episodes_list_model_.get());
 
   return episodes_list_.get();
+}
+
+void EpisodeSelectorWizardPage::DestroyEpisodeList()
+{
+  episodes_list_items_.reset();
+  episodes_list_model_.reset();
+  episodes_list_.reset();
 }

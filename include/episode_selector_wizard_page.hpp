@@ -28,8 +28,9 @@ public slots:
   void FilterEpisodeList(const QString& filter);
 
 private:
-  QGroupBox * createForm();
-  QListView * createEpisodesList();
+  QGroupBox * CreateForm();
+  QListView * CreateEpisodesList();
+  void DestroyEpisodeList();
 
   Configuration& config_;
   SeriesDataCalculator series_data_calculator_;
