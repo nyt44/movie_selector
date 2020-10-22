@@ -3,35 +3,30 @@
 SeriesSelectorWizardPage o-- Configuration
 Wizard *-- SeriesSelectorWizardPage
 Wizard *-- EpisodeSelectorWizardPage
-EpisodeSelectorWizardPage o-- MapCollector
+EpisodeSelectorWizardPage *-- SeriesDataCalculator
 EpisodeSelectorWizardPage o-- Configuration
-MapCollector o-- Configuration
-Wizard o-- EpisodeRunner
-EpisodeRunner <|-- WindowsRunner
-EpisodeRunner <|-- LinuxRunner
-MapCollector ..> EpisodeInfo
+SeriesDataCalculator o-- Configuration
+Wizard *-- EpisodeRunner
+SeriesDataCalculator ..> EpisodeInfo
+EpisodeRunner o-- Configuration
 
+class Wizard {
+  void accept()
+}
 class Configuration {
-  std::string GetRootDir()
-  std::string GetSeriesName(int)
-  std::string GetSeriesDirName(int)
+  std::string_view GetRootDir()
+  std::string_view GetVlcPath()
+  const char* GetSeriesName(int idx)
+  std::string_view GetSeriesDirName(int idx)
   int GetSeriesCount()
 }
 
-class MapCollector {
-   const std::map<std::string, EpisodeInfo>& GetMap(int)
+class SeriesDataCalculator {
+  const std::vector<EpisodeInfo>& GetSeriesData(int idx)
 }
 
 class EpisodeRunner {
-  {abstract} void run(std::string, std::string)
-}
-
-class WindowsRunner {
-  void run(std::string, std::string)
-}
-
-class LinuxRunner {
-  void run(std::string, std::string)
+  void run(std::string_view path, std::string_view subtitles)
 }
 
 class EpisodeInfo {
@@ -41,7 +36,10 @@ class EpisodeInfo {
 }
 
 class EpisodeSelectorWizardPage {
-  std::vector<std::string> filtered_keys_
+  std::pair<std::string_view, std::string_view> GetPathToSelectedEpisode()
+  void UpdateEpisodeList(int page_id) [slot]
+  void SetCurrentId(int current_id) [slot]
+  void FilterEpisodeList(const QString& filter) [slot]
 }
 
 @enduml

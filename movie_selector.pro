@@ -27,8 +27,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH = include
 
-#unix:INCLUDEPATH += /usr/include/glib-2.0 \
-#                    /usr/lib/x86_64-linux-gnu/glib-2.0/include/
 win32:INCLUDEPATH += C:/boost_1_74_0
 
 unix:LIBS += -lstdc++fs
